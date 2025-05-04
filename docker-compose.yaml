@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:17
+    container_name: ss-postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ss-network
+
+  webapp:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+    container_name: ss-webapp
+    environment:
+      - DATABASE_URL=postgres://root:root@db/mydb
+    volumes:
+      - ./webapp:/webapp
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    networks:
+      - ss-network
+
+  rte:
+    build:
+      context: ./rte
+      dockerfile: Dockerfile
+    container_name: ss-rte
+    depends_on:
+      - db
+    networks:
+      - ss-network
+
+volumes:
+  postgres_data:
+
+networks:
+  ss-network:
+    driver: bridge
