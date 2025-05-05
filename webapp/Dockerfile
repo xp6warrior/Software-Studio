@@ -5,10 +5,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip && pip install pynecone
+RUN pip install --upgrade pip && pip install reflex
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v0.6.9"
 
 WORKDIR /webapp
 EXPOSE 3000
 
-CMD ["pc", "run"]
+CMD ["reflex", "run"]
