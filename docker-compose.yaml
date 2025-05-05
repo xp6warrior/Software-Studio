@@ -5,9 +5,10 @@ services:
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: mydb
+      POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     networks:
@@ -19,7 +20,7 @@ services:
       dockerfile: Dockerfile
     container_name: ss-webapp
     environment:
-      - DATABASE_URL=postgres://root:root@db/mydb
+      - DATABASE_URL=postgresql://root:root@db/postgres
     volumes:
       - ./webapp:/webapp
     depends_on:
