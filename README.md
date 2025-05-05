@@ -4,8 +4,8 @@
 - Docker
 
 ## Deploying app
-Run the following commands to interact start or stop the app:
+Run the following commands to start or stop the app:
 ```
 cd Software-Studio
-./ss-service.sh [start|stop]
+./ss-services.sh [start|stop]
 ```
