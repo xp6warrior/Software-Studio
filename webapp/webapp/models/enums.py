@@ -1,5 +1,16 @@
 from enum import Enum
 
+class ModelsEnum(Enum):
+    PERSONAL_ITEM = "personal_items"
+    JEWELRY = "jewelry"
+    ACCESSORIES = "accessories"
+    TRAVEL_ITEMS = "travel_items"
+    ELECTRONIC_DEVICES = "electronic_devices"
+    CLOTHING = "clothing"
+    OFFICE_ITEMS = "office_items"
+    OTHER_ITEMS = "other_items"
+
+
 class StatusEnum(Enum):
     LOST = "lost"
     FOUND = "found"

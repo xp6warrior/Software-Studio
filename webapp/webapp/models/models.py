@@ -18,7 +18,7 @@ class PersonalItems(rx.Model, table=True):
     description: str
     status: e.StatusEnum = enum_field(e.StatusEnum, "StatusEnum")
 
-class Jewelery(rx.Model, table=True):
+class Jewelry(rx.Model, table=True):
     __table_args__ = {"schema": "Lost_Found"}
 
     id: int = Field(primary_key=True)
