@@ -1,10 +1,27 @@
 BEGIN;
 
--- DATABASE
 CREATE SCHEMA Lost_Found;
+CREATE SCHEMA Accounts;
+
+
+SET search_path TO Accounts;
+
+CREATE TYPE RoleEnum AS ENUM (
+    'user',
+    'worker',
+    'admin'
+);
+
+CREATE TABLE IF NOT EXISTS Accounts (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL,
+    password TEXT NOT NULL,
+    role RoleEnum NOT NULL
+);
+
+
 SET search_path TO Lost_Found;
 
--- ENUMS
 CREATE TYPE ColorEnum AS ENUM (
     'red',
     'green',
@@ -111,16 +128,18 @@ CREATE TABLE IF NOT EXISTS PersonalItems (
     type PersonalItemType NOT NULL,
     color ColorEnum NOT NULL,
     description TEXT,
-    status StatusEnum NOT NULL
+    status StatusEnum NOT NULL,
+    account_id INT REFERENCES Accounts.Accounts NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Jewelery (
+CREATE TABLE IF NOT EXISTS Jewelry (
     id SERIAL PRIMARY KEY,
     type JeweleryType NOT NULL,
     color ColorEnum NOT NULL,
     size SizeEnum NOT NULL,
     description TEXT,
-    status StatusEnum NOT NULL
+    status StatusEnum NOT NULL,
+    account_id INT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Accessories (
@@ -130,7 +149,8 @@ CREATE TABLE IF NOT EXISTS Accessories (
     material MaterialEnum NOT NULL,
     brand TEXT,
     description TEXT,
-    status StatusEnum NOT NULL
+    status StatusEnum NOT NULL,
+    account_id INT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS TravelItems (
@@ -141,7 +161,8 @@ CREATE TABLE IF NOT EXISTS TravelItems (
     material MaterialEnum NOT NULL,
     brand TEXT,
     description TEXT,
-    status StatusEnum NOT NULL
+    status StatusEnum NOT NULL,
+    account_id INT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS ElectronicDevices (
@@ -151,7 +172,8 @@ CREATE TABLE IF NOT EXISTS ElectronicDevices (
     material MaterialEnum NOT NULL,
     brand TEXT,
     description TEXT,
-    status StatusEnum NOT NULL
+    status StatusEnum NOT NULL,
+    account_id INT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Clothing (
@@ -162,7 +184,8 @@ CREATE TABLE IF NOT EXISTS Clothing (
     material MaterialEnum NOT NULL,
     brand TEXT,
     description TEXT,
-    status StatusEnum NOT NULL
+    status StatusEnum NOT NULL,
+    account_id INT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS OfficeItems (
@@ -173,7 +196,8 @@ CREATE TABLE IF NOT EXISTS OfficeItems (
     material MaterialEnum NOT NULL,
     name TEXT,
     description TEXT,
-    status StatusEnum NOT NULL
+    status StatusEnum NOT NULL,
+    account_id INT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS OtherItems (
@@ -185,7 +209,8 @@ CREATE TABLE IF NOT EXISTS OtherItems (
     brand TEXT,
     name TEXT,
     description TEXT,
-    status StatusEnum NOT NULL
+    status StatusEnum NOT NULL,
+    account_id INT REFERENCES Accounts.Accounts NOT NULL
 );
 
 COMMIT;

@@ -10,6 +10,10 @@ class ModelsEnum(Enum):
     OFFICE_ITEMS = "office_items"
     OTHER_ITEMS = "other_items"
 
+class RoleEnum(Enum):
+    USER = "user"
+    WORKER = "worker"
+    ADMIN = "admin"
 
 class StatusEnum(Enum):
     LOST = "lost"
