@@ -9,6 +9,9 @@ then
 elif [[ "$1" = "restart" ]]
 then
     docker compose down -v
+elif [[ "$1" = "test" ]]
+then
+    python3 webapp/tests
 else
-    echo "ERROR: incorrect goal, must be [start|stop]"
+    echo "ERROR: incorrect goal, must be [start|stop|restart|test]"
 fi

@@ -5,8 +5,7 @@ from . import enums as e
 class Accounts(rx.Model, table=True):
     __table_args__ = {"schema": "accounts"}
 
-    id: int = Field(primary_key=True)
-    email: str
+    email: str = Field(primary_key=True)
     password: str
     role: e.RoleEnum = e.enum_field(e.RoleEnum, "RoleEnum")
 

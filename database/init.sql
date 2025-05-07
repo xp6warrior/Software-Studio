@@ -13,8 +13,7 @@ CREATE TYPE RoleEnum AS ENUM (
 );
 
 CREATE TABLE IF NOT EXISTS Accounts (
-    id SERIAL PRIMARY KEY,
-    email TEXT NOT NULL,
+    email TEXT PRIMARY KEY,
     password TEXT NOT NULL,
     role RoleEnum NOT NULL
 );
@@ -129,7 +128,7 @@ CREATE TABLE IF NOT EXISTS PersonalItems (
     color ColorEnum NOT NULL,
     description TEXT,
     status StatusEnum NOT NULL,
-    account_id INT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Jewelry (
@@ -139,7 +138,7 @@ CREATE TABLE IF NOT EXISTS Jewelry (
     size SizeEnum NOT NULL,
     description TEXT,
     status StatusEnum NOT NULL,
-    account_id INT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Accessories (
@@ -150,7 +149,7 @@ CREATE TABLE IF NOT EXISTS Accessories (
     brand TEXT,
     description TEXT,
     status StatusEnum NOT NULL,
-    account_id INT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS TravelItems (
@@ -162,7 +161,7 @@ CREATE TABLE IF NOT EXISTS TravelItems (
     brand TEXT,
     description TEXT,
     status StatusEnum NOT NULL,
-    account_id INT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS ElectronicDevices (
@@ -173,7 +172,7 @@ CREATE TABLE IF NOT EXISTS ElectronicDevices (
     brand TEXT,
     description TEXT,
     status StatusEnum NOT NULL,
-    account_id INT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Clothing (
@@ -185,7 +184,7 @@ CREATE TABLE IF NOT EXISTS Clothing (
     brand TEXT,
     description TEXT,
     status StatusEnum NOT NULL,
-    account_id INT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS OfficeItems (
@@ -197,7 +196,7 @@ CREATE TABLE IF NOT EXISTS OfficeItems (
     name TEXT,
     description TEXT,
     status StatusEnum NOT NULL,
-    account_id INT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS OtherItems (
@@ -210,7 +209,7 @@ CREATE TABLE IF NOT EXISTS OtherItems (
     name TEXT,
     description TEXT,
     status StatusEnum NOT NULL,
-    account_id INT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
 COMMIT;
