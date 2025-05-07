@@ -1,37 +1,33 @@
-"""Welcome to Reflex! This file outlines the steps to create a basic app."""
+"""EXAMPLE"""
 
 import reflex as rx
-
 from rxconfig import config
 
+from webapp.models.models import Accounts
+from webapp.models.enums import RoleEnum
 
 class State(rx.State):
-    """The app state."""
-
-    ...
-
+    @rx.event
+    def add_account(self):
+        with rx.session() as session:
+            session.add(
+                Accounts(
+                    email="abc@gmail.com",
+                    password="12345",
+                    role=RoleEnum.ADMIN
+                )
+            )
+            session.commit()
 
 def index() -> rx.Component:
     # Welcome Page (Index)
-    return rx.container(
-        rx.color_mode.button(position="top-right"),
-        rx.vstack(
-            rx.heading("Welcome to Reflex!", size="9"),
-            rx.text(
-                "Get started by editing ",
-                rx.code(f"{config.app_name}/{config.app_name}.py"),
-                size="5",
-            ),
-            rx.link(
-                rx.button("Check out our docs!"),
-                href="https://reflex.dev/docs/getting-started/introduction/",
-                is_external=True,
-            ),
-            spacing="5",
-            justify="center",
-            min_height="85vh",
-        ),
-        rx.logo(),
+    return rx.center(
+        "Email: abc@gmail.com, Password: 12345, Role: admin",
+        "Check the DB for proof ex. using DBeaver",
+        rx.button(
+            "Add this account",
+            on_click=State.add_account
+        )
     )
 
 

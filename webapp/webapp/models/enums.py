@@ -1,4 +1,11 @@
 from enum import Enum
+from sqlalchemy import Column, Enum as dbEnum
+from sqlmodel import Field
+
+def enum_field(enum_cls, enum_name):
+    return Field(
+        sa_column = Column(dbEnum(enum_cls, name=enum_name, create_type=False), nullable=False)
+    )
 
 class ModelsEnum(Enum):
     PERSONAL_ITEM = "personal_items"
