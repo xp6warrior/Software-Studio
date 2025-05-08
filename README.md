@@ -7,5 +7,5 @@
 Run the following commands to interact with the app:
 ```
 cd Software-Studio
-./ss-services.sh [start|stop|restart]
+./ss-services.sh [start|stop|restart|test]
 ```
