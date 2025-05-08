@@ -3,6 +3,7 @@ from sqlmodel import Field
 from . import enums as e
 
 class Accounts(rx.Model, table=True):
+    __tablename__ = "accounts"
     __table_args__ = {"schema": "accounts"}
 
     email: str = Field(primary_key=True)
@@ -11,6 +12,7 @@ class Accounts(rx.Model, table=True):
 
 
 class PersonalItems(rx.Model, table=True):
+    __tablename__ = "personalitems"
     __table_args__ = {"schema": "lost_found"}
 
     id: int = Field(primary_key=True)
@@ -18,10 +20,11 @@ class PersonalItems(rx.Model, table=True):
     color: e.ColorEnum = e.enum_field(e.ColorEnum, "ColorEnum")
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    account_id: int = Field(foreign_key="accounts.accounts.id")
+    email : str = Field(foreign_key="accounts.accounts.email")
 
 
 class Jewelry(rx.Model, table=True):
+    __tablename__ = "jewelry"
     __table_args__ = {"schema": "lost_found"}
 
     id: int = Field(primary_key=True)
@@ -31,9 +34,10 @@ class Jewelry(rx.Model, table=True):
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
-    account_id: int = Field(foreign_key="accounts.accounts.id")
+    email: str = Field(foreign_key="accounts.accounts.email")
 
 class Accessories(rx.Model, table=True):
+    __tablename__ = "accessories"
     __table_args__ = {"schema": "lost_found"}
 
     id: int = Field(primary_key=True)
@@ -44,10 +48,11 @@ class Accessories(rx.Model, table=True):
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
-    account_id: int = Field(foreign_key="accounts.accounts.id")
+    email: str = Field(foreign_key="accounts.accounts.email")
 
 
 class TravelItems(rx.Model, table=True):
+    __tablename__ = "travelitems"
     __table_args__ = {"schema": "lost_found"}
 
     id: int = Field(primary_key=True)
@@ -59,10 +64,11 @@ class TravelItems(rx.Model, table=True):
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
-    account_id: int = Field(foreign_key="accounts.accounts.id")
+    email: str = Field(foreign_key="accounts.accounts.email")
 
 
 class ElectronicDevices(rx.Model, table=True):
+    __tablename__ = "electronicdevices"
     __table_args__ = {"schema": "lost_found"}
 
     id: int = Field(primary_key=True)
@@ -73,9 +79,10 @@ class ElectronicDevices(rx.Model, table=True):
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
-    account_id: int = Field(foreign_key="accounts.accounts.id")
+    email: str = Field(foreign_key="accounts.accounts.email")
 
 class Clothing(rx.Model, table=True):
+    __tablename__ = "clothing"
     __table_args__ = {"schema": "lost_found"}
 
     id: int = Field(primary_key=True)
@@ -87,9 +94,10 @@ class Clothing(rx.Model, table=True):
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
-    account_id: int = Field(foreign_key="accounts.accounts.id")
+    email: str = Field(foreign_key="accounts.accounts.email")
 
 class OfficeItems(rx.Model, table=True):
+    __tablename__ = "officeitems"
     __table_args__ = {"schema": "lost_found"}
 
     id: int = Field(primary_key=True)
@@ -101,9 +109,10 @@ class OfficeItems(rx.Model, table=True):
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
-    account_id: int = Field(foreign_key="accounts.accounts.id")
+    email: str = Field(foreign_key="accounts.accounts.email")
 
 class OtherItems(rx.Model, table=True):
+    __tablename__ = "otheritems"
     __table_args__ = {"schema": "lost_found"}
 
     id: int = Field(primary_key=True)
@@ -116,4 +125,4 @@ class OtherItems(rx.Model, table=True):
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
-    account_id: int = Field(foreign_key="accounts.accounts.id")
+    email: str = Field(foreign_key="accounts.accounts.email")

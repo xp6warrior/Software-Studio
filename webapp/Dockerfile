@@ -11,7 +11,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v0.6.9"
 
-EXPOSE 3000
-EXPOSE 8000
-
 CMD ["reflex", "run"]

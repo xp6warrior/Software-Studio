@@ -1,30 +1,29 @@
 services:
   db:
     image: postgres:17
-    container_name: ss-postgres
+    container_name: ss-test-postgres
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: postgres
+      POSTGRES_DB: test
     volumes:
-      - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     networks:
-      - ss-network
+      - ss-test-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U root"]
       interval: 3s
       retries: 5
 
-  webapp:
+  test-webapp:
     build:
       context: ./webapp
       dockerfile: Dockerfile
-    container_name: ss-webapp
+    container_name: ss-test-webapp
     environment:
-      - DATABASE_URL=postgresql://root:root@db/postgres
+      - DATABASE_URL=postgresql://root:root@db/test
     volumes:
       - ./webapp:/webapp
     depends_on:
@@ -34,21 +33,9 @@ services:
       - "3000:3000"
       - "8000:8000"
     networks:
-      - ss-network
-
-  rte:
-    build:
-      context: ./rte
-      dockerfile: Dockerfile
-    container_name: ss-rte
-    depends_on:
-      - db
-    networks:
-      - ss-network
-
-volumes:
-  postgres_data:
+      - ss-test-network
+    command: ["python3", "-m", "unittest", "discover", "-s", "test", "-p", "int_*.py"]
 
 networks:
-  ss-network:
+  ss-test-network:
     driver: bridge

@@ -17,7 +17,7 @@ def login_user(email, password):
 def get_submitted_lost_items(email):
 	return [{"Item":{"ID":"123","Name": "Watch", "Color": "Black"}, "Status": "Pending"},{"Item":{"ID":"456","Name": "Pen", "Color": "Blue", "Brand": "ParkerS"}, "Status": "Ready for Pickup"}]
 
-from webapp.backend.lost_item import submit_lost_item
+from webapp.backend.logic.lost_item_logic import submit_lost_item
 	
 def get_notifications(email):
 	return ["Your item 456 was matched and is ready for pickup"]

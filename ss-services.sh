@@ -11,7 +11,14 @@ then
     docker compose down -v
 elif [[ "$1" = "test" ]]
 then
-    python3 webapp/tests
+    cd webapp
+    echo "Running webapp unit tests..."
+    python3 -m unittest discover -s test -p unit_*.py && \
+
+    cd .. && \
+    echo "Running webapp integration tests..." && \
+    docker compose -f docker-compose.test.yaml up --abort-on-container-exit --exit-code-from test-webapp
+    docker compose -f docker-compose.test.yaml down --volumes --remove-orphans
 else
     echo "ERROR: incorrect goal, must be [start|stop|restart|test]"
 fi
