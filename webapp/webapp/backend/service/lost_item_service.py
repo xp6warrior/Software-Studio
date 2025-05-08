@@ -1,12 +1,31 @@
-import reflex as rx
 import inspect
 import webapp.models.models as models
-from webapp.backend.repository.lost_item_repo import *
+from webapp.backend.repository.item_repo import *
 
 models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass) if not cls == models.Accounts]
 
-def get_submitted_lost_items(email: str):
-    pass
+"""
+    Gets a list of all models belonging to the user.
+
+    Parameters:
+        email (str): The email (primary key) of the account.
+    
+    Returns:
+        A list of models belonging to the user.
+"""
+def get_submitted_lost_items(email: str) -> list[rx.Model]:
+    models = select_items(email)
+    formatted_list = []
+
+    for m in models:
+        model_columns = {c.name: getattr(m, c.name) for c in m.__table__.columns
+                         if c.name != "status" and c.name != "email"}
+        formatted_list.append({
+            "Item": model_columns,
+            "status": m.status
+        })
+    
+    return formatted_list
 
 """
     Takes the email of an account and json input of a submitted item, creates a model object
@@ -38,7 +57,7 @@ def get_submitted_lost_items(email: str):
 def submit_lost_item(email: str, input_json: dict[str, str]):
     input_json["email"] = email
     model = create_model_from_json(input_json)
-    insert_item(model)
+    insert_update_item(model)
 
 """
     Takes the id (primary key) of an item, the owner's email and the edited json input of a submitted item,
@@ -65,14 +84,13 @@ def submit_lost_item(email: str, input_json: dict[str, str]):
         Nothing
 
     Exception:
-        If model is not specified or incorrect.
-        If the model doesn't fit the database (violates data integrity)
+        If the model attribute is not specified or incorrect.
 """
 def edit_submitted_lost_item(id: int, email: str, input_json: dict[str, str]):
     input_json["email"] = email
     model = create_model_from_json(input_json)
     model.id = id
-    update_item(model, type(model), id, email)
+    insert_update_item(model)
 
 """
     Takes the id (primary key) of an item, the owner's email and the model of the item. Deletes
@@ -96,6 +114,7 @@ def delete_submitted_lost_item(id: int, email: str, model_name: str):
     delete_item(get_model_class(model_name), id, email)
 
 
+
 def get_model_class(model_name: str) -> object:
     model_cls = None
     for m in models_list:
@@ -103,7 +122,7 @@ def get_model_class(model_name: str) -> object:
             model_cls = m
     return model_cls
 
-def create_model_from_json(input_json: dict[str, str]) -> object:
+def create_model_from_json(input_json: dict[str, str]) -> rx.Model:
     # All keys, values to lower case (case insensitive)
     input_json = {key.lower(): val for key, val in input_json.items()}
     

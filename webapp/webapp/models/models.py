@@ -10,7 +10,6 @@ class Accounts(rx.Model, table=True):
     password: str
     role: e.RoleEnum = e.enum_field(e.RoleEnum, "RoleEnum")
 
-
 class PersonalItems(rx.Model, table=True):
     __tablename__ = "personalitems"
     __table_args__ = {"schema": "lost_found"}
@@ -20,8 +19,8 @@ class PersonalItems(rx.Model, table=True):
     color: e.ColorEnum = e.enum_field(e.ColorEnum, "ColorEnum")
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
+    
     email : str = Field(foreign_key="accounts.accounts.email")
-
 
 class Jewelry(rx.Model, table=True):
     __tablename__ = "jewelry"
@@ -50,7 +49,6 @@ class Accessories(rx.Model, table=True):
 
     email: str = Field(foreign_key="accounts.accounts.email")
 
-
 class TravelItems(rx.Model, table=True):
     __tablename__ = "travelitems"
     __table_args__ = {"schema": "lost_found"}
@@ -65,7 +63,6 @@ class TravelItems(rx.Model, table=True):
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
     email: str = Field(foreign_key="accounts.accounts.email")
-
 
 class ElectronicDevices(rx.Model, table=True):
     __tablename__ = "electronicdevices"

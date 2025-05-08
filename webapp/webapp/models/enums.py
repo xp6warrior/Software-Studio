@@ -4,7 +4,13 @@ from sqlmodel import Field
 
 def enum_field(enum_cls, enum_name):
     return Field(
-        sa_column = Column(dbEnum(enum_cls, name=enum_name, create_type=False), nullable=False)
+        sa_column = Column(dbEnum(
+            enum_cls,
+            name=enum_name,
+            create_type=False,
+            native_enum=False,
+            values_callable=lambda x: [e.value for e in x]
+        ), nullable=False)
     )
 
 class ModelsEnum(Enum):
@@ -67,7 +73,7 @@ class PersonalItemType(Enum):
     ID_CARD = "id_card"
     PASSPORT = "passport"
     KEYS = "keys"
-    CREDIT_CARD = "credit_card"
+    CREDIT_DEBIT_CARD = "credit_debit_card"
     OTHER = "other"
 
 class JewelryType(Enum):

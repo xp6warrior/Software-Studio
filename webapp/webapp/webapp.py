@@ -2,6 +2,8 @@ import reflex as rx
 
 from rxconfig import config
 
+#from webapp.backend.service.login_service import create_user, login_user
+
 def login_user(email, password):
 	users={"u@g.c": "p", "w@g.c": "p", "a@g.c": "p"}
 	if email in users and users[email]==password:
@@ -14,10 +16,7 @@ def login_user(email, password):
 	else:
 		return False
 
-def get_submitted_lost_items(email):
-	return [{"Item":{"ID":"123","Name": "Watch", "Color": "Black"}, "Status": "Pending"},{"Item":{"ID":"456","Name": "Pen", "Color": "Blue", "Brand": "ParkerS"}, "Status": "Ready for Pickup"}]
-
-from webapp.backend.logic.lost_item_logic import submit_lost_item
+from webapp.backend.service.lost_item_service import get_submitted_lost_items, submit_lost_item, edit_submitted_lost_item, delete_submitted_lost_item
 	
 def get_notifications(email):
 	return ["Your item 456 was matched and is ready for pickup"]
