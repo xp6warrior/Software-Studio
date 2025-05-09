@@ -129,5 +129,5 @@ class OfficeItemType(Enum):
     OTHER = "other"
 
 class MatchStatus(Enum):
-    UNCONFIRMED = "Unconfirmed"
-    CONFIRMED = "Confirmed"
+    UNCONFIRMED = "unconfirmed"
+    CONFIRMED = "confirmed"
