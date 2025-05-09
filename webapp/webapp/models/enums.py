@@ -127,3 +127,7 @@ class OfficeItemType(Enum):
     FOLDER = "folder"
     BOOK = "book"
     OTHER = "other"
+
+class MatchStatus(Enum):
+    UNCONFIRMED = "Unconfirmed"
+    CONFIRMED = "Confirmed"
