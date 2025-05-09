@@ -123,3 +123,13 @@ class OtherItems(rx.Model, table=True):
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
 
     email: str = Field(foreign_key="accounts.accounts.email")
+
+class Match(rx.Model, table=True):
+    __tablename__ = "match"
+    __table_args__ = {"schema": "lost_found"}
+
+    id: int = Field(primary_key=True)
+    table_name: str
+    lost_item_id: int
+    found_item_id: int
+    status: e.MatchStatus = e.enum_field(e.MatchStatus, "MatchStatus")
