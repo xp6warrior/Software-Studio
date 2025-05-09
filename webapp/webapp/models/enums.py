@@ -31,6 +31,7 @@ class RoleEnum(Enum):
 class StatusEnum(Enum):
     LOST = "lost"
     FOUND = "found"
+    CONFIRMED = "confirmed"
 
 class SizeEnum(Enum):
     XS = "xs"

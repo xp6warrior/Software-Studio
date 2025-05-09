@@ -38,7 +38,7 @@ CREATE TYPE ColorEnum AS ENUM (
     'other'
 );
 
-CREATE TYPE StatusEnum AS ENUM ('lost', 'found');
+CREATE TYPE StatusEnum AS ENUM ('lost', 'found', 'confirmed');
 
 CREATE TYPE SizeEnum AS ENUM ('xs', 's', 'm', 'l', 'xl');
 
