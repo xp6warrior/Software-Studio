@@ -4,7 +4,7 @@ import webapp.models.enums as enums
 from webapp.backend.repository.item_repo import *
 from webapp.backend.service.login_service import create_user
 
-class TestSelectItem(unittest.TestCase):
+class TestItemCrud(unittest.TestCase):
     def test_item_crud_success(self):
         # Setup
         create_user("test@test.com", "password", enums.RoleEnum.USER)
@@ -35,7 +35,7 @@ class TestSelectItem(unittest.TestCase):
         insert_update_item(jewelry)
         insert_update_item(personal_item)
         insert_update_item(personal_item2)
-        selected = select_items("test@test.com")
+        selected = select_items_by_email("test@test.com")
         self.assertCountEqual(selected, [jewelry, personal_item, personal_item2])
 
         # Update and select
@@ -45,13 +45,20 @@ class TestSelectItem(unittest.TestCase):
         insert_update_item(jewelry)
         insert_update_item(personal_item)
         insert_update_item(personal_item2)
-        selected = select_items("test@test.com")
+        selected = select_items_by_email("test@test.com")
         self.assertCountEqual(selected, [jewelry, personal_item, personal_item2])
 
         # Delete and select
         delete_item(personal_item2)
-        selected = select_items("test@test.com")
+        selected = select_items_by_email("test@test.com")
         self.assertCountEqual(selected, [jewelry, personal_item])
+
+        # Select by id and email
+        selected = select_item_by_id_email(jewelry.id, "test@test.com", models.Jewelry)
+        self.assertEqual(selected, jewelry)
+
+        selected = select_item_by_id_email(jewelry.id, "other@email.com", models.Jewelry)
+        self.assertEqual(selected, None)
 
 if __name__ == "__main__":
     unittest.main()

@@ -21,7 +21,7 @@ models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass) 
         Any data integrity violations will result in an exception thrown by sqlalchemy.
 """
 
-def select_items(email: str) -> list[rx.Model]:
+def select_items_by_email(email: str) -> list[rx.Model]:
     items_list = []
 
     with rx.session() as session:
@@ -40,6 +40,19 @@ def select_items(email: str) -> list[rx.Model]:
             session.refresh(i)
         
     return items_list
+
+def select_item_by_id_email(id: int, email: str, model_cls: object) -> rx.Model | None:
+    with rx.session() as session:
+        model = session.exec(
+            model_cls.select().where(
+                model_cls.id == id,
+                model_cls.email == email
+            )
+        ).first()
+        if model != None:
+            session.commit()
+            session.refresh(model)
+    return model
 
 def insert_update_item(model: object):
     with rx.session() as session:

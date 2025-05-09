@@ -16,7 +16,7 @@ def login_user(email, password):
 	else:
 		return False
 
-from webapp.backend.service.lost_item_service import get_submitted_lost_items, submit_lost_item, edit_submitted_lost_item, delete_submitted_lost_item
+#from webapp.backend.service.lost_item_service import *
 	
 def get_notifications(email):
 	return ["Your item 456 was matched and is ready for pickup"]
