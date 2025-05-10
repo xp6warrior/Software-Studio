@@ -2,9 +2,10 @@ import inspect
 import re
 import webapp.models.models as models
 import webapp.models.enums as enums
-from webapp.backend.repository.item_repo import *
+from webapp.repository.item_repo import *
 
-models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass) if not cls == models.Accounts]
+models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass)
+               if cls != models.Accounts and cls != models.Match]
 email_regex = r"^[^@]+@[^@]+\.[^@]+$"
 
 """
@@ -17,7 +18,7 @@ email_regex = r"^[^@]+@[^@]+\.[^@]+$"
         A list of models belonging to the user.
 """
 def get_submitted_items(email: str) -> list[rx.Model]:
-    models = select_items_by_email(email)
+    models = select_items(email)
     formatted_list = []
 
     for m in models:

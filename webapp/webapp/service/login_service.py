@@ -1,4 +1,4 @@
-from webapp.backend.repository.login_repo import *
+from webapp.repository.account_repo import *
 from webapp.models.enums import RoleEnum
 
 """
@@ -14,7 +14,7 @@ from webapp.models.enums import RoleEnum
 """
 def create_user(email: str, password: str, role: RoleEnum):
     account = Accounts(email=email, password=password, role=role)
-    insert_account(account)
+    insert_update_account(account)
 
 """
     Finds an account object in the database, checks if the passwords match and returns it's role.

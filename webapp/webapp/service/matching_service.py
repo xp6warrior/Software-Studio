@@ -1,4 +1,4 @@
-from webapp.backend.repository import matching_repo
+from webapp.repository import matching_repo
 
 def match_item(opposite_type: str, model_name: str, item_id: int):
     #returns list of tuples, opposite tybe because we wanna see matching found items for lost ones and VV

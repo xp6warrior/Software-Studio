@@ -2,10 +2,10 @@ import unittest
 from unittest.mock import patch
 import webapp.models.models as model
 import webapp.models.enums as enums
-from webapp.backend.service.lost_item_service import *
+from webapp.service.item_service import *
 
 class TestGetSubmittedItems(unittest.TestCase):
-    @patch("webapp.backend.service.lost_item_service.select_items_by_email")
+    @patch("webapp.service.item_service.select_items")
     def test_get_submitted_items_success(self, mock_select_items):
         mock_select_items.return_value = [
             models.PersonalItems(
@@ -53,7 +53,7 @@ class TestGetSubmittedItems(unittest.TestCase):
 
 class TestSubmitItem(unittest.TestCase):
     # Success when status is wrong (unspecified)
-    @patch('webapp.backend.service.lost_item_service.insert_update_item')
+    @patch('webapp.service.item_service.insert_update_item')
     def test_submit_item_success(self, mock_insert_update_item):
         personal_item_json = {
             "model": "personalitems",
@@ -74,8 +74,8 @@ class TestSubmitItem(unittest.TestCase):
 
 class TestEditSubmittedItem(unittest.TestCase):
     # Success when attempt at editing status (ignores the action)
-    @patch('webapp.backend.service.lost_item_service.insert_update_item')
-    @patch('webapp.backend.service.lost_item_service.select_item_by_id_email')
+    @patch('webapp.service.item_service.insert_update_item')
+    @patch('webapp.service.item_service.select_item_by_id_email')
     def test_edit_submitted_item_success(self, mock_select_item_by_id_email, mock_insert_update_item):
         accessory_json = {
             "id": 5,
@@ -116,13 +116,13 @@ class TestEditSubmittedItem(unittest.TestCase):
 
 class TestDeleteSubmittedItem(unittest.TestCase):
     # Success
-    @patch('webapp.backend.service.lost_item_service.delete_item')
+    @patch('webapp.service.item_service.delete_item')
     def test_delete_submitted_lost_item_success(self, mock_delete_item):
         delete_submitted_item(5, "test@test.com", "accessories")
         mock_delete_item.assert_called_once_with(models.Accessories, 5, "test@test.com")
 
     # Exception on invalid model class
-    @patch('webapp.backend.service.lost_item_service.delete_item')
+    @patch('webapp.service.item_service.delete_item')
     def test_delete_submitted_lost_item_success(self, mock_delete_item):
         with self.assertRaises(Exception) as context:
             delete_submitted_item(5, "test@test.com", "fake_model_name")
