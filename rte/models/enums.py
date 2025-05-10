@@ -131,3 +131,4 @@ class OfficeItemType(str, enum.Enum):
 class MatchStatus(str, enum.Enum):
     UNCONFIRMED = "unconfirmed"
     CONFIRMED = "confirmed"
+    DECLINED = "declined"
