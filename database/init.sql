@@ -212,12 +212,18 @@ CREATE TABLE IF NOT EXISTS OtherItems (
     email TEXT REFERENCES Accounts.Accounts NOT NULL
 );
 
+DO $$ BEGIN
+    CREATE TYPE matchstatus AS ENUM ('unconfirmed', 'confirmed', 'declined');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 CREATE TABLE IF NOT EXISTS Match (
     id SERIAL PRIMARY KEY,
     table_name TEXT NOT NULL,
     lost_item_id INTEGER NOT NULL,
     found_item_id INTEGER NOT NULL,
-    status TEXT NOT NULL
+    status matchstatus NOT NULL
 );
 
 COMMIT;
