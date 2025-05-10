@@ -126,4 +126,4 @@ class Match(Base):
     table_name = Column(String, nullable=False)
     lost_item_id = Column(Integer, nullable=False)
     found_item_id = Column(Integer, nullable=False)
-    status = Column(Enum(MatchStatus), nullable=False)
+    status = Column(Enum(MatchStatus, name='matchstatus'), nullable=False, default=MatchStatus.UNCONFIRMED)
