@@ -133,3 +133,4 @@ class Match(rx.Model, table=True):
     lost_item_id: int
     found_item_id: int
     status: e.MatchStatus = e.enum_field(e.MatchStatus, "MatchStatus")
+    percentage: int
