@@ -127,3 +127,4 @@ class Match(Base):
     lost_item_id = Column(Integer, nullable=False)
     found_item_id = Column(Integer, nullable=False)
     status = Column(Enum(MatchStatus, name='matchstatus'), nullable=False, default=MatchStatus.UNCONFIRMED)
+    percentage = Column(Integer, nullable=False)
