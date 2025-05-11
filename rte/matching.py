@@ -1,5 +1,3 @@
-# matching.py
-
 from sqlalchemy.orm import Session
 from sqlalchemy.inspection import inspect
 from models.models import Match
@@ -27,16 +25,16 @@ for model_cls, threshold in MATCH_THRESHOLDS.items():
     MATCH_CONFIG[model_cls] = (columns, threshold)
 
 def get_relevant_items(session: Session, model_cls, status):
-    """Fetch items of a given status (LOST/FOUND) for a model"""
+    #fetch items LOST/FOUND
     return session.query(model_cls).filter(model_cls.status == status).all()
 
 def items_match(attrs, item1, item2, threshold):
-    """Return True if item1 & item2 match on >= threshold attributes"""
+    #return true if items match on the nb of attributes from the threshold
     match_count = sum(getattr(item1, attr) == getattr(item2, attr) for attr in attrs)
     return match_count >= threshold
 
 def match_items():
-    """Main matching function — runs full matching process"""
+    #main matching fun
     session = SessionLocal()
 
     for model_cls, (attrs, threshold) in MATCH_CONFIG.items():
@@ -70,7 +68,7 @@ def match_items():
     session.close()
 
 def get_stats():
-    """Returns stats for RTE dashboard"""
+    #gets stats
     session = SessionLocal()
     stats = {}
 
