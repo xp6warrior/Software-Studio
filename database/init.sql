@@ -2,24 +2,23 @@ BEGIN;
 
 CREATE SCHEMA Lost_Found;
 CREATE SCHEMA Accounts;
+CREATE SCHEMA Archive;
 
-
-SET search_path TO Accounts;
-
-CREATE TYPE RoleEnum AS ENUM (
+CREATE TYPE Accounts.RoleEnum AS ENUM (
     'user',
     'worker',
     'admin'
 );
 
-CREATE TABLE IF NOT EXISTS Accounts (
+CREATE TABLE IF NOT EXISTS Accounts.Accounts (
     email TEXT PRIMARY KEY,
     password TEXT NOT NULL,
-    role RoleEnum NOT NULL
+    role Accounts.RoleEnum NOT NULL,
+    pesel INT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL
 );
 
-
-SET search_path TO Lost_Found;
 
 CREATE TYPE ColorEnum AS ENUM (
     'red',
@@ -38,7 +37,7 @@ CREATE TYPE ColorEnum AS ENUM (
     'other'
 );
 
-CREATE TYPE StatusEnum AS ENUM ('lost', 'found', 'confirmed');
+CREATE TYPE StatusEnum AS ENUM ('lost', 'found');
 
 CREATE TYPE SizeEnum AS ENUM ('xs', 's', 'm', 'l', 'xl');
 
@@ -122,94 +121,102 @@ CREATE TYPE OfficeItemType AS ENUM (
 
 
 -- TABLES
-CREATE TABLE IF NOT EXISTS PersonalItems (
+CREATE TABLE IF NOT EXISTS Lost_found.PersonalItems (
     id SERIAL PRIMARY KEY,
     type PersonalItemType NOT NULL,
     color ColorEnum NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL,
     status StatusEnum NOT NULL,
-    email TEXT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL,
+    pickup timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Jewelry (
+CREATE TABLE IF NOT EXISTS Lost_found.Jewelry (
     id SERIAL PRIMARY KEY,
     type JeweleryType NOT NULL,
     color ColorEnum NOT NULL,
     size SizeEnum NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL,
     status StatusEnum NOT NULL,
-    email TEXT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL,
+    pickup timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Accessories (
+CREATE TABLE IF NOT EXISTS Lost_found.Accessories (
     id SERIAL PRIMARY KEY,
     type AccessoryType NOT NULL,
     color ColorEnum NOT NULL,
     material MaterialEnum NOT NULL,
-    brand TEXT,
-    description TEXT,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
     status StatusEnum NOT NULL,
-    email TEXT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL,
+    pickup timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS TravelItems (
+CREATE TABLE IF NOT EXISTS Lost_found.TravelItems (
     id SERIAL PRIMARY KEY,
     type TravelItemType NOT NULL,
     color ColorEnum NOT NULL,
     size SizeEnum NOT NULL,
     material MaterialEnum NOT NULL,
-    brand TEXT,
-    description TEXT,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
     status StatusEnum NOT NULL,
-    email TEXT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL,
+    pickup timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS ElectronicDevices (
+CREATE TABLE IF NOT EXISTS Lost_found.ElectronicDevices (
     id SERIAL PRIMARY KEY,
     type ElectronicDeviceType NOT NULL,
     color ColorEnum NOT NULL,
     material MaterialEnum NOT NULL,
-    brand TEXT,
-    description TEXT,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
     status StatusEnum NOT NULL,
-    email TEXT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL,
+    pickup timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Clothing (
+CREATE TABLE IF NOT EXISTS Lost_found.Clothing (
     id SERIAL PRIMARY KEY,
     type ClothingType NOT NULL,
     color ColorEnum NOT NULL,
     size SizeEnum NOT NULL,
     material MaterialEnum NOT NULL,
-    brand TEXT,
-    description TEXT,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
     status StatusEnum NOT NULL,
-    email TEXT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL,
+    pickup timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS OfficeItems (
+CREATE TABLE IF NOT EXISTS Lost_found.OfficeItems (
     id SERIAL PRIMARY KEY,
     type OfficeItemType NOT NULL,
     color ColorEnum NOT NULL,
     size SizeEnum NOT NULL,
     material MaterialEnum NOT NULL,
-    name TEXT,
-    description TEXT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
     status StatusEnum NOT NULL,
-    email TEXT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL,
+    pickup timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS OtherItems (
+CREATE TABLE IF NOT EXISTS Lost_found.OtherItems (
     id SERIAL PRIMARY KEY,
-    type TEXT,
+    type TEXT NOT NULL,
     color ColorEnum NOT NULL,
     size SizeEnum NOT NULL,
     material MaterialEnum NOT NULL,
-    brand TEXT,
-    name TEXT,
-    description TEXT,
+    brand TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
     status StatusEnum NOT NULL,
-    email TEXT REFERENCES Accounts.Accounts NOT NULL
+    email TEXT REFERENCES Accounts.Accounts NOT NULL,
+    pickup timestamp NOT NULL
 );
 
 DO $$ BEGIN
@@ -218,12 +225,128 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
-CREATE TABLE IF NOT EXISTS Match (
+CREATE TABLE IF NOT EXISTS Lost_found.Match (
     id SERIAL PRIMARY KEY,
     table_name TEXT NOT NULL,
     lost_item_id INTEGER NOT NULL,
     found_item_id INTEGER NOT NULL,
-    status matchstatus NOT NULL
+    status matchstatus NOT NULL,
+    percentage INT NOT NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS Archive.PersonalItems (
+    id SERIAL PRIMARY KEY,
+    type PersonalItemType NOT NULL,
+    color ColorEnum NOT NULL,
+    description TEXT NOT NULL,
+    pickup timestamp NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    pesel INT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS Archive.Jewelry (
+    id SERIAL PRIMARY KEY,
+    type JeweleryType NOT NULL,
+    color ColorEnum NOT NULL,
+    size SizeEnum NOT NULL,
+    description TEXT NOT NULL,
+    pickup timestamp NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    pesel INT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS Archive.Accessories (
+    id SERIAL PRIMARY KEY,
+    type AccessoryType NOT NULL,
+    color ColorEnum NOT NULL,
+    material MaterialEnum NOT NULL,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
+    pickup timestamp NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    pesel INT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS Archive.TravelItems (
+    id SERIAL PRIMARY KEY,
+    type TravelItemType NOT NULL,
+    color ColorEnum NOT NULL,
+    size SizeEnum NOT NULL,
+    material MaterialEnum NOT NULL,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
+    pickup timestamp NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    pesel INT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS Archive.ElectronicDevices (
+    id SERIAL PRIMARY KEY,
+    type ElectronicDeviceType NOT NULL,
+    color ColorEnum NOT NULL,
+    material MaterialEnum NOT NULL,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
+    pickup timestamp NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    pesel INT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS Archive.Clothing (
+    id SERIAL PRIMARY KEY,
+    type ClothingType NOT NULL,
+    color ColorEnum NOT NULL,
+    size SizeEnum NOT NULL,
+    material MaterialEnum NOT NULL,
+    brand TEXT NOT NULL,
+    description TEXT NOT NULL,
+    pickup timestamp NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    pesel INT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS Archive.OfficeItems (
+    id SERIAL PRIMARY KEY,
+    type OfficeItemType NOT NULL,
+    color ColorEnum NOT NULL,
+    size SizeEnum NOT NULL,
+    material MaterialEnum NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    pickup timestamp NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    pesel INT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS Archive.OtherItems (
+    id SERIAL PRIMARY KEY,
+    type TEXT NOT NULL,
+    color ColorEnum NOT NULL,
+    size SizeEnum NOT NULL,
+    material MaterialEnum NOT NULL,
+    brand TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    pickup timestamp NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    pesel INT NOT NULL UNIQUE
 );
 
 COMMIT;

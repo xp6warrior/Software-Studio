@@ -1,189 +1,163 @@
 import unittest
-from unittest.mock import patch
-import webapp.models.models as model
-import webapp.models.enums as enums
+from unittest.mock import patch, call
+from webapp.models.models import *
+from webapp.models.enums import *
 from webapp.service.item_service import *
 
-class TestGetSubmittedItems(unittest.TestCase):
-    @patch("webapp.service.item_service.select_items")
-    def test_get_submitted_items_success(self, mock_select_items):
-        mock_select_items.return_value = [
-            models.PersonalItems(
-                id=5,
-                type=enums.PersonalItemType.KEYS,
-                color=enums.ColorEnum.GREEN,
-                description="Small key",
-                status=enums.StatusEnum.LOST,
-                email="test@test.com"
-            ),
-            models.Jewelry(
-                id=7,
-                type=enums.JewelryType.NECKLACE,
-                color=enums.ColorEnum.BLUE,
-                size=enums.SizeEnum.XS,
-                description="My necklace",
-                status=enums.StatusEnum.LOST,
-                email="test@test.com"
-            )
-        ]
-        items = get_submitted_items("test@test.com")
-        mock_select_items.assert_called_once_with("test@test.com")
+class TestItemService(unittest.TestCase):
 
-        self.assertEqual(items, [
-            {
-                "Item": {
-                    "id": 5,
-                    "type": "keys",
-                    "color": "green",
-                    "description": "Small key"
-                },
-                "status": "lost"
-            },
-            {
-                "Item": {
-                    "id": 7,
-                    "type": "necklace",
-                    "color": "blue",
-                    "size": "xs",
-                    "description": "My necklace"
-                },
-                "status": "lost"
-            }
+    @patch("webapp.service.item_service.select_matches")
+    @patch("webapp.service.item_service.select_items")
+    def test_get_submitted_items(self, mock_select_items, mock_select_matches):
+        personal_item = PersonalItems(
+            id=5, type=PersonalItemType.KEYS, color=ColorEnum.GREEN,
+            description="Small key", status=StatusEnum.LOST, email="test@test.com"
+        )
+        jewelry = Jewelry(
+            id=7, type=JewelryType.NECKLACE, color=ColorEnum.BLUE,
+            size=SizeEnum.XS, description="My necklace", status=StatusEnum.LOST,
+            email="test@test.com"
+        )
+        match1 = Match(
+            id=1, table_name="personalitems", lost_item_id=3, found_item_id=5,
+            status=MatchStatus.UNCONFIRMED
+        )
+        match2 = Match(
+            id=2, table_name="jewelry", lost_item_id=5, found_item_id=7,
+            status=MatchStatus.CONFIRMED
+        )
+        personal_item_item = Lost_Item(
+            "personalitems", "keys", "green", "Small key", None, None, None, None, "lost", "5"
+        )
+        jewelry_item = Lost_Item(
+            "jewelry", "necklace", "blue", "My necklace", "xs", None, None, None, "confirmed", "7"
+        )
+        mock_select_items.side_effect = [[personal_item, jewelry], []]
+        mock_select_matches.side_effect = [[match1], [match2]]
+        
+        # 2 models
+        items = get_submitted_lost_items("test@test.com")
+        self.assertCountEqual(items, [personal_item_item, jewelry_item])
+
+        # No models
+        items = get_submitted_lost_items("other@other.com")
+        self.assertEqual(items, [])
+
+        # Mock assertions
+        mock_select_items.assert_has_calls([call("test@test.com"), call("other@other.com")])
+        mock_select_matches.assert_has_calls([
+            call(personal_item.id, PersonalItems), call(jewelry.id, Jewelry)
         ])
 
-class TestSubmitItem(unittest.TestCase):
-    # Success when status is wrong (unspecified)
-    @patch('webapp.service.item_service.insert_update_item')
-    def test_submit_item_success(self, mock_insert_update_item):
-        personal_item_json = {
-            "model": "personalitems",
-            "type": "keys",
-            "color": "green",
-            "description": "Small key",
-            "email": "abc@123.com"
-        }
-        personal_item_obj = model.PersonalItems(
-            type=enums.PersonalItemType.KEYS,
-            color=enums.ColorEnum.GREEN,
-            description="Small key",
-            status=enums.StatusEnum.LOST,
-            email="abc@123.com"
-        )
-        submit_lost_item(personal_item_json)
-        mock_insert_update_item.assert_called_once_with(personal_item_obj)
-
-class TestEditSubmittedItem(unittest.TestCase):
-    # Success when attempt at editing status (ignores the action)
-    @patch('webapp.service.item_service.insert_update_item')
-    @patch('webapp.service.item_service.select_item_by_id_email')
-    def test_edit_submitted_item_success(self, mock_select_item_by_id_email, mock_insert_update_item):
-        accessory_json = {
-            "id": 5,
-            "model": "accessories",
-            "type": "sunglasses",
-            "color": "green",
-            "material": "plastic",
-            "brand": "Poloriod",
-            "description": "My awesome sunglasses pls find",
-            "status": "lost",
-            "email": "abc@123.com"
-        }
-        accessory_obj = model.Accessories(
-            id=5,
-            type=enums.AccessoryType.GLASSES,
-            color=enums.ColorEnum.RED,
-            material=enums.MaterialEnum.PLASTIC,
-            brand="Poloriod",
-            description="My awesome glasses pls find",
-            status=enums.StatusEnum.FOUND,
-            email="abc@123.com"
-        )
-        accessory_obj_edited = model.Accessories(
-            id=5,
-            type=enums.AccessoryType.SUNGLASSES,
-            color=enums.ColorEnum.GREEN,
-            material=enums.MaterialEnum.PLASTIC,
-            brand="Poloriod",
-            description="My awesome sunglasses pls find",
-            status=enums.StatusEnum.FOUND,
-            email="abc@123.com"
-        )
-        mock_select_item_by_id_email.return_value = accessory_obj
-
-        edit_submitted_item(accessory_json)
-        mock_select_item_by_id_email.assert_called_once_with(5, "abc@123.com", "accessories")
-        mock_insert_update_item.assert_called_once_with(accessory_obj_edited)
-
-class TestDeleteSubmittedItem(unittest.TestCase):
-    # Success
-    @patch('webapp.service.item_service.delete_item')
-    def test_delete_submitted_lost_item_success(self, mock_delete_item):
-        delete_submitted_item(5, "test@test.com", "accessories")
-        mock_delete_item.assert_called_once_with(models.Accessories, 5, "test@test.com")
-
-    # Exception on invalid model class
-    @patch('webapp.service.item_service.delete_item')
-    def test_delete_submitted_lost_item_success(self, mock_delete_item):
+        # Exception
         with self.assertRaises(Exception) as context:
-            delete_submitted_item(5, "test@test.com", "fake_model_name")
+            get_submitted_lost_items("not an email@ase")
+        self.assertEqual(str(context.exception), "Invalid email address! not an email@ase")
 
-        self.assertEqual(str(context.exception), "Invalid model class! fake_model_name")
 
-class TestCreateModelFromJson(unittest.TestCase):
-    # Success with: unordered attributes, case insensitive keys, invalid attributes
-    def test_create_new_model_from_json_success(self):
-        travel_item_json = {
-            "material": "leather",
-            "moDEl": "travelitems",
-            "email": "abc@123.com",
-            "TYPE": "suitcase",
-            
-            # Invalid attributes
-            "id": "10",
-            "fake_attribute": "value"
-        }
-        travel_item_obj = model.TravelItems(
-            type=enums.TravelItemType.SUITCASE,
-            material=enums.MaterialEnum.LEATHER,
-            email="abc@123.com"
+    @patch("webapp.service.item_service.insert_update_item")
+    def test_submit_lost_item(self, mock_select_items):
+        accessory = Accessories(
+            type=AccessoryType.GLASSES, color=ColorEnum.BLACK, material=MaterialEnum.PLASTIC,
+            brand="", description="Cool glasses", status=StatusEnum.LOST, email="test@test.com"
+        )
+        accessory_item = Lost_Item(
+            "accessories", "glasses", "black", "Cool glasses", None, "plastic", "", None, "lost", None
+        )
+        accessory_item2 = Lost_Item(
+            "accessory", "glasses", "black", "Cool glasses", None, "plastic", "", None, "lost", None
         )
 
-        actual_obj = create_new_model_from_json(travel_item_json)
-        self.assertEqual(travel_item_obj, actual_obj)
+        submit_lost_item(accessory.email, accessory_item)
+        mock_select_items.assert_called_once_with(accessory)
 
-    # Exception when no model specified
-    def test_create_new_model_from_json_no_model(self):
-        jewelry_json = {
-            "type": "ring",
-            "color": "blue",
-            "size": "xs",
-            "description": "Small ring",
-            "status": "lost",
-            "email": "abc@123.com"
-        }
-    
+        # Exception
         with self.assertRaises(Exception) as context:
-            create_new_model_from_json(jewelry_json)
+            submit_lost_item(accessory.email, accessory_item2)
+        self.assertEqual(str(context.exception), "Invalid item cateogory! accessory")
 
-        self.assertEqual(str(context.exception), "\"model\" attribute must be defined!")
+    @patch("webapp.service.item_service.insert_update_item")
+    def test_submit_found_item(self, mock_select_items):
+        accessory = Accessories(
+            type=AccessoryType.GLASSES, color=ColorEnum.BLACK, material=MaterialEnum.PLASTIC,
+            brand="", description="Cool glasses", status=StatusEnum.FOUND, email="test@test.com"
+        )
+        accessory_item = Found_Item(
+            "accessories", "glasses", "black", "Cool glasses", None, "plastic", "", None, None
+        )
+        accessory_item2 = Found_Item(
+            "accessory", "glasses", "black", "Cool glasses", None, "plastic", "", None, None
+        )
 
-    # Exception when invalid model class
-    def test_submit_lost_item_invalid_model(self):
-        medicine_json = {
-            "model": "accounts",
-            "type": "pills",
-            "color": "white",
-            "size": "xs",
-            "description": "My pills",
-            "status": "lost",
-            "email": "abc@123.com"
-        }
-    
+        submit_found_item(accessory.email, accessory_item)
+        mock_select_items.assert_called_once_with(accessory)
+
+        # Exception
         with self.assertRaises(Exception) as context:
-            create_new_model_from_json(medicine_json)
+            submit_found_item(accessory.email, accessory_item2)
+        self.assertEqual(str(context.exception), "Invalid item cateogory! accessory")
 
-        self.assertEqual(str(context.exception), "Invalid model class! accounts")
+    @patch("webapp.service.item_service.delete_item")
+    @patch("webapp.service.item_service.select_item_by_id")
+    def test_delete_lost_item(self, mock_select_item_by_id, mock_delete_item):
+        personal_item = PersonalItems(
+            id=5, type=PersonalItemType.KEYS, color=ColorEnum.GREEN,
+            description="Small key", status=StatusEnum.LOST, email="test@test.com"
+        )
+        mock_select_item_by_id.return_value = personal_item
+        delete_lost_item(personal_item.email, personal_item.id, PersonalItems)
+        mock_select_item_by_id.assert_called_once_with(5, PersonalItems)
+        mock_delete_item.assert_called_once_with(personal_item)
 
+        # Exception
+        with self.assertRaises(Exception) as context:
+            delete_lost_item("other@other.com", personal_item.id, PersonalItems)
+        self.assertEqual(str(context.exception), "Attempt to delete item of other user!")
+
+        mock_select_item_by_id.return_value = None
+        with self.assertRaises(Exception) as context:
+            delete_lost_item("example@other.com", 5, str)
+        self.assertEqual(str(context.exception), "str of id 5 does not exist!")
+
+    @patch("webapp.service.item_service.insert_update_item")
+    @patch("webapp.service.item_service.select_account")
+    @patch("webapp.service.item_service.select_matches")
+    @patch("webapp.service.item_service.select_item_by_id")
+    def test_hand_over_and_archive_match(self, mock_select_item_by_id, mock_select_matches,
+                                         mock_select_account, mock_insert_update_item):
+        personal_item_found = PersonalItems(
+            id=5, type=PersonalItemType.KEYS, color=ColorEnum.GREEN,
+            description="Small key", status=StatusEnum.FOUND, email="worker@test.com"
+        )
+        personal_item_lost = PersonalItems(
+            id=3, type=PersonalItemType.KEYS, color=ColorEnum.GREEN,
+            description="Small key", status=StatusEnum.LOST, email="user@test.com"
+        )
+        match1 = Match(
+            id=1, table_name="personalitems", lost_item_id=3, found_item_id=5,
+            status=MatchStatus.CONFIRMED, percentage=90
+        )
+        match2 = Match(
+            id=3, table_name="personalitems", lost_item_id=6, found_item_id=5,
+            status=MatchStatus.UNCONFIRMED, percentage=70
+        )
+        account = Accounts(
+            id=1, email="user@test.com", password="password", role=RoleEnum.USER, pesel=12345,
+            name="name", surname="surname"
+        )
+        archived_item = ArchivePersonalItems(
+            id=5, type=PersonalItemType.KEYS, color=ColorEnum.GREEN, description="Small key",
+            email="user@test.com", username="name", surname="surname", pesel=12345
+        )
+        mock_select_item_by_id.side_effect = [personal_item_found, personal_item_lost]
+        mock_select_matches.return_value = [match1, match2]
+        mock_select_account.return_value = account
+
+        hand_over_and_archive_match(5, PersonalItems)
+        mock_select_item_by_id.assert_has_calls([call(5, PersonalItems), call(3, PersonalItems)])
+        mock_select_matches.assert_called_once_with(5, PersonalItems)
+        mock_select_account.assert_called_once_with("user@test.com")
+        mock_insert_update_item.assert_called_once_with(archived_item)
 
 if __name__ == "__main__":
     unittest.main()

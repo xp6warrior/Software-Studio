@@ -1,166 +1,131 @@
 import inspect
 import re
 import webapp.models.models as models
-import webapp.models.enums as enums
+from webapp.models.archive_models import *
+from webapp.models.enums import MatchStatus
 from webapp.repository.item_repo import *
+from webapp.repository.matches_repo import select_matches
+from webapp.repository.account_repo import select_account
+from webapp.items import *
 
 models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass)
                if cls != models.Accounts and cls != models.Match]
+archive_models = {
+    models.PersonalItems: ArchivePersonalItems,
+    models.Jewelry: ArchiveJewelry,
+    models.Accessories: ArchiveAccessories,
+    models.TravelItems: ArchiveTravelItems,
+    models.ElectronicDevices: ArchiveElectronicDevices,
+    models.Clothing: ArchiveClothing,
+    models.OfficeItems: ArchiveOfficeItems,
+    models.OtherItems: ArchiveOtherItems
+}
+# TODO Better email verification
 email_regex = r"^[^@]+@[^@]+\.[^@]+$"
 
-"""
-    Gets a list of all models belonging to the user.
+def get_submitted_lost_items(email: str) -> list[Lost_Item]:
+    if re.match(email_regex, email) == None:
+        raise Exception(f"Invalid email address! {email}")
 
-    Parameters:
-        email (str): The email (primary key) of the account.
-    
-    Returns:
-        A list of models belonging to the user.
-"""
-def get_submitted_items(email: str) -> list[rx.Model]:
     models = select_items(email)
-    formatted_list = []
+    return_list = []
 
-    for m in models:
-        model_columns = {c.name: getattr(m, c.name) for c in m.__table__.columns
-                         if c.name != "status" and c.name != "email"}
-        formatted_list.append({
-            "Item": model_columns,
-            "status": m.status
-        })
-    
-    return formatted_list
+    for model in models:
+        item = Lost_Item(
+            category=model.__tablename__,
+            item_type=model.type,
+            desc=model.description,
+            status=model.status,
+            item_id=str(model.id),
+            color=getattr(model, "color", None),
+            size=getattr(model, "size", None),
+            material=getattr(model, "material", None),
+            brand=getattr(model, "brand", None),
+            name=getattr(model, "name", None)
+        )
 
-"""
-    Submit item functions:
-        submit_lost_item(input_json: dict[str, str])
-        submit_found_item(input_json: dict[str, str])
+        matches = select_matches(model.id, type(model))
+        for match in matches:
+            # TODO Make it so I can use enum here
+            if match.status == "confirmed":
+                item.status = "confirmed"
+                break
 
-    These functions vertify parameters in input_json, create a model object from
-    the parameters, and adds the object into the database.
+        return_list.append(item)
 
-    The input_json:
-        - Requires a "model" attribute, specifying which model class to instantiate
-        - Ignores attributes that aren't defined in the model class
-        - Ignores the "id" attribute, since this function creates a new entry
-        - Status attribute is optional (hardcoded to LOST or FOUND)
+    return return_list
 
-    Parameters:
-        input_json (dict[str, str]): A json dictionary representing the lost item
-        Format:
-            {
-                "model": "<name_of_model_class>",
-                "attribute1": "value",
-                "attribute2": "value",
-                ...
-            }
-        The keys are case insensitive!
-        The order of the attributes doesn't matter!
-
-    Returns:
-        Nothing
-
-    Exception:
-        If model is not specified or incorrect.
-        If the email doesn't follow the correct email format.
-        If the model doesn't fit the database (violates data integrity).
-"""
-def submit_lost_item(input_json: dict[str, str]):
-    model = create_new_model_from_json(input_json)
-    model.status = enums.StatusEnum.LOST.value
-    insert_update_item(model)
-
-def submit_found_item(input_json: dict[str, str]):
-    model = create_new_model_from_json(input_json)
-    model.status = enums.StatusEnum.FOUND.value
-    insert_update_item(model)
-
-"""
-    This functions find the model in the database (based on id and email), modify
-    its attributes based on attributes in input_json, and commits the changes to the DB.
-
-    Takes the id (primary key) of an item andd the edited json input of a submitted item,
-    edits the model object from the db and commits the changes
-
-    The input_json:
-        - Requires a "model" attribute, specifying which model class to instantiate
-        - Ignores attributes that aren't defined in the model class
-        - Ignores the "id", "email" attributes, since updating those values would be bad
-
-    Parameters:
-        input_json (dict[str, str]): A json dictionary representing the lost item
-        Format:
-            {
-                "model": "<name_of_model_class>",
-                "attribute1": "value",
-                "attribute2": "value",
-                ...
-            }
-        The keys are case insensitive!
-        The order of the attributes doesn't matter!
-
-    Returns:
-        Nothing
-
-    Exception:
-        If the model attribute is not specified or incorrect.
-"""
-def edit_submitted_item(input_json: dict[str, str]):
-    model = select_item_by_id_email(input_json["id"], input_json["email"], input_json["model"])
-    for key, val in input_json.items():
-        if hasattr(model, key) and key != "status":
-            setattr(model, key, val)
-    
-    insert_update_item(model)
-
-"""
-    Takes the id (primary key) of an item, the owner's email and the model of the item. Deletes
-    the entry from the database.
-
-    Parameters:
-        id (int): The id (primary key) of the item
-        email (str): The email (primary key) of the account
-        model_name (str): The name of of model (case sensitive!)
-
-    Returns:
-        Nothing
-
-    Exception:
-        If model_name is incorrect.
-"""
-def delete_submitted_item(id: int, email: str, model_name: str):
-    model = get_model_class(model_name)
+def submit_lost_item(email: str, item: Lost_Item):
+    model = create_model_from_item(item.category, item, email)
     if model == None:
-        raise Exception(f"Invalid model class! {model_name}")
-    delete_item(get_model_class(model_name), id, email)
+        raise Exception(f"Invalid item cateogory! {item.category}")
+    
+    # TODO Make it so I can use the enum here
+    model.status = "lost"
+    insert_update_item(model)
+
+def submit_found_item(email: str, item: Found_Item):
+    model = create_model_from_item(item.category, item, email)
+    if model == None:
+        raise Exception(f"Invalid item cateogory! {item.category}")
+    
+    # TODO Make it so I can use the enum here
+    model.status = "found"
+    insert_update_item(model)
+
+def delete_lost_item(email: str, id: int, model_cls: object):
+    selected = select_item_by_id(id, model_cls)
+    if selected == None:
+        raise Exception(f"{model_cls.__name__} of id {id} does not exist!")
+    if selected.email != email:
+        raise Exception("Attempt to delete item of other user!")
+    delete_item(selected)
+
+def hand_over_and_archive_match(id: int, model_cls: object):
+    f_model = select_item_by_id(id, model_cls)
+    matches = select_matches(id, model_cls)
+
+    for m in matches:
+        if m.status == "confirmed":
+            l_model = select_item_by_id(m.lost_item_id, model_cls)
+            owner = select_account(l_model.email)
+
+            data = f_model.dict()
+            data.pop("status")
+            data["email"] = owner.email
+            data["username"] = owner.name
+            data["surname"] = owner.surname
+            data["pesel"] = owner.pesel
+
+            archive_cls = archive_models[model_cls]
+            archive_model = archive_cls(**data)
+
+            insert_update_item(archive_model)
+            break
 
 
-def get_model_class(model_name: str) -> object:
+def create_model_from_item(model_name: str, item: Item, email: str) -> object:
     model_cls = None
     for m in models_list:
         if m.__tablename__ == model_name:
             model_cls = m
-    return model_cls
-
-def create_new_model_from_json(input_json: dict[str, str]) -> rx.Model:
-    # All keys, values to lower case (case insensitive)
-    input_json = {key.lower(): val for key, val in input_json.items()}
-
-    # Check for correct email
-    if re.match(email_regex, input_json["email"]) == None:
-        raise Exception("Email must be valid")
-    
-    # Find model value
-    model_name = input_json.get("model")
-    if model_name == None:
-        raise Exception("\"model\" attribute must be defined!")
-    
-    # Find corresponding model class
-    model_cls = get_model_class(model_name)
     if model_cls == None:
-        raise Exception(f"Invalid model class! {model_name}")
+        return None
     
-    # Create instance of model_cls only with values of only its defined attributes specified
-    model_columns = {col.name for col in model_cls.__table__.columns if col.name != "id"}
-    model_column_values = {key: val for key, val in input_json.items() if key in model_columns}
-    return model_cls(**model_column_values)
+    model = model_cls(
+        type=item.item_type,
+        email=email,
+        description=item.desc
+    )
+    if item.color != None and hasattr(model, "color"):
+        model.color = item.color
+    if item.size != None and hasattr(model, "size"):
+        model.size = item.size
+    if item.material != None and hasattr(model, "material"):
+        model.material = item.material
+    if item.brand != None and hasattr(model, "brand"):
+        model.brand = item.brand
+    if item.name != None and hasattr(model, "name"):
+        model.name = item.name
+
+    return model

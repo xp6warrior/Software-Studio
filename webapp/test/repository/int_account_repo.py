@@ -1,21 +1,19 @@
 import unittest
-import reflex
 from webapp.models.enums import RoleEnum
 from webapp.models.models import Accounts 
 from webapp.repository.account_repo import *
 
 class TestAccountRepo(unittest.TestCase):
 
-    def setUp(self):
-        self.account1 = Accounts(
-            email="abc@123.com",
-            password="password",
-            role=RoleEnum.ADMIN
+    @classmethod
+    def setUpClass(cls):
+        cls.account1 = Accounts(
+            email="abc@123.com", password="password", role=RoleEnum.ADMIN,
+            pesel=12345, name="name", surname="surname"
         )
-        self.account2 = Accounts(
-            email="def@456.com",
-            password="password",
-            role=RoleEnum.WORKER
+        cls.account2 = Accounts(
+            email="def@456.com", password="password", role=RoleEnum.WORKER,
+            pesel=67890, name="name2", surname="surname2"
         )
 
     def test_account_crud(self):

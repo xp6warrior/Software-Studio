@@ -1,6 +1,7 @@
 import reflex as rx
 import inspect
 import webapp.models.models as models
+from datetime import datetime, timezone
 
 models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass)
                if cls != models.Accounts and cls != models.Match]
@@ -33,15 +34,11 @@ def select_items(email: str) -> list[rx.Model]:
         
     return items_list
 
-def select_item_by_id_email(id: int, email: str, model_cls: object) -> rx.Model | None:
+def select_item_by_id(id: int, model_cls: object) -> rx.Model | None:
     if id == None:
-        raise Exception("select_item_by_id_email id must not be None!")
+        raise Exception("select_item_by_id id must not be None!")
     elif type(id) != int:
-        raise Exception("select_item_by_id_email id must be of type int!")
-    if email == None:
-        raise Exception("select_item_by_id_email email must not be None!")
-    elif type(email) != str:
-        raise Exception("select_item_by_id_email email must be of type str!")
+        raise Exception("select_item_by_id id must be of type int!")
     
     with rx.session() as session:
         model = session.exec(
@@ -59,6 +56,8 @@ def insert_update_item(model: object):
         raise Exception("insert_update_item parameter must not be None!")
     elif not isinstance(model, rx.Model):
         raise Exception("insert_update_item parameter must be of type Model!")
+    
+    model.pickup = datetime.now(timezone.utc)
 
     with rx.session() as session:
         session.add(model)

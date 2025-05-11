@@ -1,34 +1,34 @@
 import unittest
-import reflex
-import webapp.models.models as models
-import webapp.models.enums as enums
+from webapp.models.models import *
+from webapp.models.enums import *
 from webapp.repository.item_repo import *
-from webapp.service.login_service import create_user
+from webapp.service.account_service import create_user
 
 class TestItemRepo(unittest.TestCase):
 
-    def setUp(self):
-        create_user("test@test.com", "password", enums.RoleEnum.USER)
-        self.personal_item1 = models.PersonalItems(
-            type=enums.PersonalItemType.KEYS,
-            color=enums.ColorEnum.GRAY,
+    @classmethod
+    def setUpClass(cls):
+        create_user("test@test.com", "password", RoleEnum.USER, 12345, "name", "surname")
+        cls.personal_item1 = PersonalItems(
+            type=PersonalItemType.KEYS,
+            color=ColorEnum.GRAY,
             description="My keys",
-            status=enums.StatusEnum.LOST,
+            status=StatusEnum.LOST,
             email="test@test.com"
         )
-        self.personal_item2 = models.PersonalItems(
-            type=enums.PersonalItemType.CREDIT_DEBIT_CARD,
-            color=enums.ColorEnum.WHITE,
+        cls.personal_item2 = PersonalItems(
+            type=PersonalItemType.CREDIT_DEBIT_CARD,
+            color=ColorEnum.WHITE,
             description="My credit card",
-            status=enums.StatusEnum.LOST,
+            status=StatusEnum.LOST,
             email="test@test.com"
         )
-        self.jewelry = models.Jewelry(
-            type=enums.JewelryType.NECKLACE,
-            color=enums.ColorEnum.RED,
-            size=enums.SizeEnum.S,
+        cls.jewelry = Jewelry(
+            type=JewelryType.NECKLACE,
+            color=ColorEnum.RED,
+            size=SizeEnum.S,
             description="My necklace",
-            status=enums.StatusEnum.LOST,
+            status=StatusEnum.LOST,
             email="test@test.com"
         )
 
@@ -60,29 +60,23 @@ class TestItemRepo(unittest.TestCase):
         self.assertEqual(selected, [])
 
         # Select by id, email
-        selected = select_item_by_id_email(self.jewelry.id, "test@test.com", models.Jewelry)
+        selected = select_item_by_id(self.jewelry.id, Jewelry)
         self.assertEqual(selected, self.jewelry)
-        selected = select_item_by_id_email(self.jewelry.id, "test@test.com", models.TravelItems)
+        selected = select_item_by_id(self.jewelry.id, TravelItems)
         self.assertEqual(selected, None)
 
         # Select by id, email exceptions
         with self.assertRaises(Exception) as context:
-            select_item_by_id_email(None, None, models.Jewelry)
-        self.assertEqual(str(context.exception), "select_item_by_id_email id must not be None!")
+            select_item_by_id(None, Jewelry)
+        self.assertEqual(str(context.exception), "select_item_by_id id must not be None!")
         with self.assertRaises(Exception) as context:
-            select_item_by_id_email("None", None, models.Jewelry)
-        self.assertEqual(str(context.exception), "select_item_by_id_email id must be of type int!")
-        with self.assertRaises(Exception) as context:
-            select_item_by_id_email(5, None, models.Jewelry)
-        self.assertEqual(str(context.exception), "select_item_by_id_email email must not be None!")
-        with self.assertRaises(Exception) as context:
-            select_item_by_id_email(5, 5, models.Jewelry)
-        self.assertEqual(str(context.exception), "select_item_by_id_email email must be of type str!")
+            select_item_by_id("None", Jewelry)
+        self.assertEqual(str(context.exception), "select_item_by_id id must be of type int!")
 
         # Update and select
-        self.jewelry.size = enums.SizeEnum.XS
-        self.personal_item1.type = enums.PersonalItemType.PASSPORT
-        self.personal_item2.color = enums.ColorEnum.BLACK
+        self.jewelry.size = SizeEnum.XS
+        self.personal_item1.type = PersonalItemType.PASSPORT
+        self.personal_item2.color = ColorEnum.BLACK
         insert_update_item(self.jewelry)
         insert_update_item(self.personal_item1)
         insert_update_item(self.personal_item2)
