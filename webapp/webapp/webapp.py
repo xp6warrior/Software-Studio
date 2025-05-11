@@ -47,7 +47,7 @@ def submit_lost_item(email,item):
     f=open("./test.txt","a")
     f.write(f"345,{item.category},{item.item_type},{item.color},{item.desc},{item.size},{item.material},{item.brand},{item.name},Pending\n")
     f.close()
-def delete_lost_item(email,item_id):
+def delete_lost_item(email,item_id, category):
     f=open("./test.txt", "r")
     x=f.readlines()
     ret=[]
@@ -67,27 +67,27 @@ def delete_lost_item(email,item_id):
 def get_notifications(email):
     return ["Your item 456 was matched and is ready for pickup"]
     
-def submit_found_item(item):
+def submit_found_item(item, worker_email):
     f=open("./test2.txt","a")
     f.write(f"\n345,{item.category},{item.item_type},{item.color},{item.desc},{item.size},{item.material},{item.brand},{item.name}\n")
     f.close()
 
 #    V------for this function make sure to provide pairs of lost and found items with match score sorted using match scores descending
-def get_matches():
+def get_matches(worker_email):
     return [
     [Lost_Item("123","p", "w", "b", "w", "l", "l", "o", "a", "Pending"), Found_Item("484","p", "w", "b", "w", "l", "l", "o", "a"), "90%"],
     [Lost_Item("233","d", "s", "b", "w", "l", "l", "o", "a", "Pending"), Found_Item("324","s", "d", "b", "w", "l", "l", "o", "a"), "80%"],
     ]
     
-def confirm_match(lost_item_id, found_item_id):
+def confirm_match(lost_item_id, found_item_id, category):
     pass
 
 #    V-----------the found item details with the pesel of the owner
-def get_confirmed_matches_with_user_pesel():
+def get_confirmed_matches_with_user_pesel(worker_email):
     return [Matched_Item("123","p", "w", "b", "w", "l", "l", "o", "a", "1244324")]
 
 #    V------this function is called when worker finally hands over the found item to owner and it will archive the record
-def hand_over_and_archive_match(found_item_id):
+def hand_over_and_archive_match(found_item_id, category):
     pass
 #   V------return list of strings
 def get_stats():
@@ -223,21 +223,21 @@ class State(rx.State):
     def call_submit_found_item(self):
         item=Item(self.category, self.item_type, self.color, self.desc, self.size, self.material, self.brand, self.name)
         self.temp="ITEM SUBMITTED"
-        submit_found_item(item)
+        submit_found_item(item, State.email)
         self.load_found_items()
     def load_matches(self):
-        t=get_matches()
+        t=get_matches(State.email)
         self.matches = [{"lost_item_id": x[0].item_id,"lost_item_category": x[0].category,"lost_item_type": x[0].item_type,"lost_item_color": x[0].color,"lost_item_desc": x[0].desc,"lost_item_size": x[0].size,"lost_item_material": x[0].material,"lost_item_brand": x[0].brand,"lost_item_name": x[0].name,"lost_item_status": x[0].status,
         "found_item_id": x[1].item_id,"found_item_category": x[1].category,"found_item_type": x[1].item_type,"found_item_color": x[1].color,"found_item_desc": x[1].desc,"found_item_size": x[1].size,"found_item_material": x[1].material,"found_item_brand": x[1].brand,"found_item_name": x[1].name, "match_score": x[2]} for x in t]
-    def call_confirm_match(self,lost_item_id, found_item_id):
+    def call_confirm_match(self,lost_item_id, found_item_id, category):
         self.load_matches()
-        confirm_match(lost_item_id, found_item_id)
+        confirm_match(lost_item_id, found_item_id, category)
     def load_confirmed_matches(self):
-        t=get_confirmed_matches_with_user_pesel()
+        t=get_confirmed_matches_with_user_pesel(State.email)
         self.confirmed_matches = [{"found_item_id": x.item_id,"found_item_category": x.category,"found_item_type": x.item_type,"found_item_color": x.color,"found_item_desc": x.desc,"found_item_size": x.size,"found_item_material": x.material,"found_item_brand": x.brand,"found_item_name": x.name, "owner_pesel": x.pesel} for x in t]
-    def call_hand_over_and_archive_match(self,found_item_id):
+    def call_hand_over_and_archive_match(self,found_item_id, category):
         self.load_confirmed_matches()
-        hand_over_and_archive_match(found_item_id)
+        hand_over_and_archive_match(found_item_id, category)
 def index() -> rx.Component:
     return rx.cond(State.not_logged_in,
         rx.center(
@@ -282,12 +282,12 @@ def index() -> rx.Component:
                         rx.vstack(
                                 rx.text("Category"),
                                 rx.select(
-                                    items=["personal_items","jewelry","accessories","travel_items","electronic_devices","clothing","office_items","other_items"],
+                                    items=["personalitems","jewelry","accessories","travelitems","electronicdevices","clothing","officeitems","otheritems"],
                                     value=State.category,
                                     on_change=State.set_category,
                                     placeholder="",
                                     ),
-                                    rx.cond((State.category == "personal_items"),
+                                    rx.cond((State.category == "personalitems"),
                                     rx.vstack(
                                         rx.text("Type of Personal Item"),
                                         rx.select(
@@ -320,7 +320,7 @@ def index() -> rx.Component:
                                         ),
                                     ),
                                     ),
-                                    rx.cond((State.category == "travel_items"),
+                                    rx.cond((State.category == "travelitems"),
                                     rx.vstack(
                                         rx.text("Type of Travel Item"),
                                         rx.select(
@@ -331,7 +331,7 @@ def index() -> rx.Component:
                                         ),
                                     ),
                                     ),
-                                    rx.cond((State.category == "electronic_devices"),
+                                    rx.cond((State.category == "electronicdevices"),
                                     rx.vstack(
                                         rx.text("Type of Electronic Device"),
                                         rx.select(
@@ -353,7 +353,7 @@ def index() -> rx.Component:
                                         ),
                                     ),
                                     ),
-                                    rx.cond((State.category == "office_items"),
+                                    rx.cond((State.category == "officeitems"),
                                     rx.vstack(
                                         rx.text("Type of Office Item"),
                                         rx.select(
@@ -364,7 +364,7 @@ def index() -> rx.Component:
                                         ),
                                     ),
                                     ),
-                                    rx.cond((State.category == "other_items"),
+                                    rx.cond((State.category == "otheritems"),
                                     rx.vstack(
                                         rx.text("Type of Other Item"),
                                         rx.input(
@@ -373,7 +373,7 @@ def index() -> rx.Component:
                                         ),
                                     ),
                                     ),
-                                rx.cond((State.category == "jewelry") | (State.category == "travel_items") | (State.category == "clothing") | (State.category == "office_items") | (State.category == "other_items"),
+                                rx.cond((State.category == "jewelry") | (State.category == "travelitems") | (State.category == "clothing") | (State.category == "officeitems") | (State.category == "otheritems"),
                                     rx.vstack(
                                         rx.text("Size"),
                                         rx.select(
@@ -384,7 +384,7 @@ def index() -> rx.Component:
                                         ),
                                     ),
                                     ),
-                                    rx.cond((State.category == "accessories") | (State.category == "travel_items") | (State.category == "electronic_devices") | (State.category == "clothing") | (State.category == "office_items") | (State.category == "other_items"),
+                                    rx.cond((State.category == "accessories") | (State.category == "travelitems") | (State.category == "electronicdevices") | (State.category == "clothing") | (State.category == "officeitems") | (State.category == "otheritems"),
                                     rx.vstack(
                                         rx.text("Material"),
                                         rx.select(
@@ -395,7 +395,7 @@ def index() -> rx.Component:
                                         ),
                                     ),
                                     ),
-                                    rx.cond((State.category == "accessories") | (State.category == "travel_items") | (State.category == "electronic_devices") | (State.category == "clothing") | (State.category == "office_items") | (State.category == "other_items"),
+                                    rx.cond((State.category == "accessories") | (State.category == "travelitems") | (State.category == "electronicdevices") | (State.category == "clothing") | (State.category == "officeitems") | (State.category == "otheritems"),
                                     rx.vstack(
                                         rx.text("Brand"),
                                         rx.input(
@@ -404,7 +404,7 @@ def index() -> rx.Component:
                                         ),
                                     ),
                                     ),
-                                    rx.cond((State.category == "other_items"),
+                                    rx.cond((State.category == "otheritems"),
                                     rx.vstack(
                                         rx.text("Name"),
                                         rx.input(
@@ -491,12 +491,12 @@ def index() -> rx.Component:
                     rx.vstack(
                             rx.text("ITEM TYPE"),
                             rx.select(
-                                items=["personal_items","jewelry","accessories","travel_items","electronic_devices","clothing","office_items","other_items"],
+                                items=["personalitems","jewelry","accessories","travelitems","electronicdevices","clothing","officeitems","otheritems"],
                                 value=State.category,
                                 on_change=State.set_category,
                                 placeholder="",
                                 ),
-                                rx.cond((State.category == "personal_items"),
+                                rx.cond((State.category == "personalitems"),
                                 rx.vstack(
                                     rx.text("TYPE OF PERSONAL ITEM"),
                                     rx.select(
@@ -529,7 +529,7 @@ def index() -> rx.Component:
                                     ),
                                 ),
                                 ),
-                                rx.cond((State.category == "travel_items"),
+                                rx.cond((State.category == "travelitems"),
                                 rx.vstack(
                                     rx.text("TYPE OF TRAVEL ITEM"),
                                     rx.select(
@@ -540,7 +540,7 @@ def index() -> rx.Component:
                                     ),
                                 ),
                                 ),
-                                rx.cond((State.category == "electronic_devices"),
+                                rx.cond((State.category == "electronicdevices"),
                                 rx.vstack(
                                     rx.text("TYPE OF ELECTRONIC DEVICE"),
                                     rx.select(
@@ -562,7 +562,7 @@ def index() -> rx.Component:
                                     ),
                                 ),
                                 ),
-                                rx.cond((State.category == "office_items"),
+                                rx.cond((State.category == "officeitems"),
                                 rx.vstack(
                                     rx.text("TYPE OF OFFICE ITEM"),
                                     rx.select(
@@ -573,7 +573,7 @@ def index() -> rx.Component:
                                     ),
                                 ),
                                 ),
-                                rx.cond((State.category == "other_items"),
+                                rx.cond((State.category == "otheritems"),
                                 rx.vstack(
                                     rx.text("TYPE OF OTHER ITEM"),
                                     rx.input(
@@ -582,7 +582,7 @@ def index() -> rx.Component:
                                     ),
                                 ),
                                 ),
-                            rx.cond((State.category == "jewelry") | (State.category == "travel_items") | (State.category == "clothing") | (State.category == "office_items") | (State.category == "other_items"),
+                            rx.cond((State.category == "jewelry") | (State.category == "travelitems") | (State.category == "clothing") | (State.category == "officeitems") | (State.category == "otheritems"),
                                 rx.vstack(
                                     rx.text("SIZE"),
                                     rx.select(
@@ -593,7 +593,7 @@ def index() -> rx.Component:
                                     ),
                                 ),
                                 ),
-                                rx.cond((State.category == "accessories") | (State.category == "travel_items") | (State.category == "electronic_devices") | (State.category == "clothing") | (State.category == "office_items") | (State.category == "other_items"),
+                                rx.cond((State.category == "accessories") | (State.category == "travelitems") | (State.category == "electronicdevices") | (State.category == "clothing") | (State.category == "officeitems") | (State.category == "otheritems"),
                                 rx.vstack(
                                     rx.text("MATERIAL"),
                                     rx.select(
@@ -604,7 +604,7 @@ def index() -> rx.Component:
                                     ),
                                 ),
                                 ),
-                                rx.cond((State.category == "accessories") | (State.category == "travel_items") | (State.category == "electronic_devices") | (State.category == "clothing") | (State.category == "office_items") | (State.category == "other_items"),
+                                rx.cond((State.category == "accessories") | (State.category == "travelitems") | (State.category == "electronicdevices") | (State.category == "clothing") | (State.category == "officeitems") | (State.category == "otheritems"),
                                 rx.vstack(
                                     rx.text("BRAND"),
                                     rx.input(
@@ -613,7 +613,7 @@ def index() -> rx.Component:
                                     ),
                                 ),
                                 ),
-                                rx.cond((State.category == "other_items"),
+                                rx.cond((State.category == "otheritems"),
                                 rx.vstack(
                                     rx.text("NAME"),
                                     rx.input(
@@ -646,7 +646,7 @@ def index() -> rx.Component:
                                     rx.text(f"{item['lost_item_id']} {item['lost_item_category']} {item['lost_item_type']} {item['lost_item_color']} {item['lost_item_desc']} {item['lost_item_size']} {item['lost_item_material']} {item['lost_item_brand']} {item['lost_item_name']} "),
                                     rx.text(f"{item['found_item_id']} {item['found_item_category']} {item['found_item_type']} {item['found_item_color']} {item['found_item_desc']} {item['found_item_size']} {item['found_item_material']} {item['found_item_brand']} {item['found_item_name']} "),
                                     rx.text(f"{item['match_score']}"),
-                                    rx.button("Confirm Match", on_click=[State.call_confirm_match(item["lost_item_id"], item["found_item_id"])]),
+                                    rx.button("Confirm Match", on_click=[State.call_confirm_match(item["lost_item_id"], item["found_item_id"], item["found_item_category"])]),
                                 )
                             )
                     ),
@@ -657,7 +657,7 @@ def index() -> rx.Component:
                                 State.confirmed_matches,
                                 lambda item: rx.hstack(
                                     rx.text(f"{item['found_item_id']} {item['found_item_category']} {item['found_item_type']} {item['found_item_color']} {item['found_item_desc']} {item['found_item_size']} {item['found_item_material']} {item['found_item_brand']} {item['found_item_name']} {item['owner_pesel']}"),
-                                    rx.button("Hand Over", on_click=[State.call_hand_over_and_archive_match(item["found_item_id"])]),
+                                    rx.button("Hand Over", on_click=[State.call_hand_over_and_archive_match(item["found_item_id"], item["found_item_category"])]),
                                 )
                             )
                     ),
