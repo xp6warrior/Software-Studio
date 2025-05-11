@@ -16,51 +16,56 @@ MATCH_THRESHOLDS = {
     models.OtherItems: 3,
 }
 
-EXCLUDED_COLUMNS = {'id', 'status', 'email'} #these attributes are useless for matching so we skip them
+EXCLUDED_COLUMNS = {'id', 'status', 'email', 'description'} #these attributes are useless for matching so we skip them
 
 MATCH_CONFIG = {}
-
 for model_cls, threshold in MATCH_THRESHOLDS.items():
     columns = [c.key for c in inspect(model_cls).columns if c.key not in EXCLUDED_COLUMNS]
     MATCH_CONFIG[model_cls] = (columns, threshold)
 
 def get_relevant_items(session: Session, model_cls, status):
-    #fetch items LOST/FOUND
     return session.query(model_cls).filter(model_cls.status == status).all()
 
-def items_match(attrs, item1, item2, threshold):
-    #return true if items match on the nb of attributes from the threshold
-    match_count = sum(getattr(item1, attr) == getattr(item2, attr) for attr in attrs)
-    return match_count >= threshold
+def calculate_match_percentage(attrs, item1, item2):
+    #returns the percentage of match
+    total = len(attrs)
+    if total == 0:
+        return 0
+    matches = sum(getattr(item1, attr) == getattr(item2, attr) for attr in attrs)
+    return int((matches / total) * 100)
 
 def match_items():
-    #main matching fun
     session = SessionLocal()
 
     for model_cls, (attrs, threshold) in MATCH_CONFIG.items():
         table_name = model_cls.__tablename__
 
-        lost_items = get_relevant_items(session, model_cls, enums.StatusEnum.LOST)
-        found_items = get_relevant_items(session, model_cls, enums.StatusEnum.FOUND)
+        lost_items = get_relevant_items(session, model_cls, 'lost')
+        found_items = get_relevant_items(session, model_cls, 'found')
 
         for lost in lost_items:
             for found in found_items:
-                #skip if matched
+                # skip if already matched
                 existing_match = session.query(Match).filter_by(
                     table_name=table_name,
                     lost_item_id=lost.id,
                     found_item_id=found.id
                 ).first()
-
                 if existing_match:
                     continue
 
-                if items_match(attrs, lost, found, threshold):
+                percentage = calculate_match_percentage(attrs, lost, found)
+
+                if percentage == 0:
+                    continue  # skip useless matches
+
+                if percentage >= (threshold / len(attrs)) * 100:
                     new_match = Match(
                         table_name=table_name,
                         lost_item_id=lost.id,
                         found_item_id=found.id,
-                        status=enums.MatchStatus.UNCONFIRMED
+                        status=enums.MatchStatus.UNCONFIRMED,
+                        percentage=percentage
                     )
                     session.add(new_match)
 
@@ -68,20 +73,17 @@ def match_items():
     session.close()
 
 def get_stats():
-    #gets stats
     session = SessionLocal()
-    stats = {}
-
     total_lost = total_found = 0
+
     for model_cls in MATCH_CONFIG.keys():
-        total_lost += session.query(model_cls).filter(model_cls.status == enums.StatusEnum.LOST).count()
-        total_found += session.query(model_cls).filter(model_cls.status == enums.StatusEnum.FOUND).count()
+        total_lost += session.query(model_cls).filter(model_cls.status == 'lost').count()
+        total_found += session.query(model_cls).filter(model_cls.status == 'found').count()
 
     unconfirmed_matches = session.query(Match).filter(Match.status == enums.MatchStatus.UNCONFIRMED).count()
     confirmed_matches = session.query(Match).filter(Match.status == enums.MatchStatus.CONFIRMED).count()
 
     session.close()
-
     return [
         {"Number of lost items": total_lost, "Number of found items": total_found},
         {"Number of unconfirmed matches": unconfirmed_matches, "Number of confirmed matches": confirmed_matches}
