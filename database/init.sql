@@ -224,6 +224,7 @@ CREATE TABLE IF NOT EXISTS Match (
     lost_item_id INTEGER NOT NULL,
     found_item_id INTEGER NOT NULL,
     status matchstatus NOT NULL
+    percentage INTEGER NOT NULL
 );
 
 COMMIT;
