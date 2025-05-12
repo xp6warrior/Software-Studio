@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.PersonalItems (
     description TEXT NOT NULL,
     status StatusEnum NOT NULL,
     email TEXT REFERENCES Accounts.Accounts NOT NULL,
-    pickup timestamp NOT NULL
+    time_stamp timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Lost_found.Jewelry (
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.Jewelry (
     description TEXT NOT NULL,
     status StatusEnum NOT NULL,
     email TEXT REFERENCES Accounts.Accounts NOT NULL,
-    pickup timestamp NOT NULL
+    time_stamp timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Lost_found.Accessories (
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.Accessories (
     description TEXT NOT NULL,
     status StatusEnum NOT NULL,
     email TEXT REFERENCES Accounts.Accounts NOT NULL,
-    pickup timestamp NOT NULL
+    time_stamp timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Lost_found.TravelItems (
@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.TravelItems (
     description TEXT NOT NULL,
     status StatusEnum NOT NULL,
     email TEXT REFERENCES Accounts.Accounts NOT NULL,
-    pickup timestamp NOT NULL
+    time_stamp timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Lost_found.ElectronicDevices (
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.ElectronicDevices (
     description TEXT NOT NULL,
     status StatusEnum NOT NULL,
     email TEXT REFERENCES Accounts.Accounts NOT NULL,
-    pickup timestamp NOT NULL
+    time_stamp timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Lost_found.Clothing (
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.Clothing (
     description TEXT NOT NULL,
     status StatusEnum NOT NULL,
     email TEXT REFERENCES Accounts.Accounts NOT NULL,
-    pickup timestamp NOT NULL
+    time_stamp timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Lost_found.OfficeItems (
@@ -202,7 +202,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.OfficeItems (
     description TEXT NOT NULL,
     status StatusEnum NOT NULL,
     email TEXT REFERENCES Accounts.Accounts NOT NULL,
-    pickup timestamp NOT NULL
+    time_stamp timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Lost_found.OtherItems (
@@ -216,7 +216,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.OtherItems (
     description TEXT NOT NULL,
     status StatusEnum NOT NULL,
     email TEXT REFERENCES Accounts.Accounts NOT NULL,
-    pickup timestamp NOT NULL
+    time_stamp timestamp NOT NULL
 );
 
 DO $$ BEGIN
@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS Archive.PersonalItems (
     type PersonalItemType NOT NULL,
     color ColorEnum NOT NULL,
     description TEXT NOT NULL,
-    pickup timestamp NOT NULL,
+    time_stamp timestamp NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     surname TEXT NOT NULL,
@@ -253,7 +253,7 @@ CREATE TABLE IF NOT EXISTS Archive.Jewelry (
     color ColorEnum NOT NULL,
     size SizeEnum NOT NULL,
     description TEXT NOT NULL,
-    pickup timestamp NOT NULL,
+    time_stamp timestamp NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     surname TEXT NOT NULL,
@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS Archive.Accessories (
     material MaterialEnum NOT NULL,
     brand TEXT NOT NULL,
     description TEXT NOT NULL,
-    pickup timestamp NOT NULL,
+    time_stamp timestamp NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     surname TEXT NOT NULL,
@@ -282,7 +282,7 @@ CREATE TABLE IF NOT EXISTS Archive.TravelItems (
     material MaterialEnum NOT NULL,
     brand TEXT NOT NULL,
     description TEXT NOT NULL,
-    pickup timestamp NOT NULL,
+    time_stamp timestamp NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     surname TEXT NOT NULL,
@@ -296,7 +296,7 @@ CREATE TABLE IF NOT EXISTS Archive.ElectronicDevices (
     material MaterialEnum NOT NULL,
     brand TEXT NOT NULL,
     description TEXT NOT NULL,
-    pickup timestamp NOT NULL,
+    time_stamp timestamp NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     surname TEXT NOT NULL,
@@ -311,7 +311,7 @@ CREATE TABLE IF NOT EXISTS Archive.Clothing (
     material MaterialEnum NOT NULL,
     brand TEXT NOT NULL,
     description TEXT NOT NULL,
-    pickup timestamp NOT NULL,
+    time_stamp timestamp NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     surname TEXT NOT NULL,
@@ -326,7 +326,7 @@ CREATE TABLE IF NOT EXISTS Archive.OfficeItems (
     material MaterialEnum NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    pickup timestamp NOT NULL,
+    time_stamp timestamp NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     surname TEXT NOT NULL,
@@ -342,7 +342,7 @@ CREATE TABLE IF NOT EXISTS Archive.OtherItems (
     brand TEXT NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    pickup timestamp NOT NULL,
+    time_stamp timestamp NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     surname TEXT NOT NULL,

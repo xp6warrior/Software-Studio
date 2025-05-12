@@ -1,6 +1,10 @@
 import reflex as rx
 from rxconfig import config
 
+from webapp.models.enums import RoleEnum
+from webapp.service.account_service import *
+from webapp.service.item_service import *
+from webapp.service.matches_service import *
 
 #   V------this "apperance" "config" we can read this from a file
 app_name="Campus Retriever"
@@ -13,112 +17,16 @@ button_style_2="red"
 #    V-------for backend. this is just testing code.
 #======================================================================================================================================================================
 
-f=open("./test.txt","w")
-f.write(f"145,j,d,h,v,wa,sa,d,j,Pending\n123,p,w,b,w,l,l,o,a,Ready to Pickup")
-f.close()
-
-#   V------return account role if creds valid and False if not
-def login_user(email, password):
-    print("LOGIN", email, password)
-    users={"u@g.c": "p", "w@g.c": "p", "a@g.c": "p"}
-    if email in users and users[email]==password:
-        if email[0]=="u":
-            return "USER"
-        elif email[0]=="w":
-            return "WORKER"
-        elif email[0]=="a":
-            return "ADMIN"
-    else:
-        return False
-#   V------return a list of Lost_Item objects
-def get_submitted_lost_items(email):
-    print("GET SUBMITTED LOST ITEMS", email)
-    f=open("./test.txt", "r")
-    x=["145,j,d,h,v,wa,sa,d,j,Pending","123,p,w,b,w,l,l,o,a,Ready to Pickup"]
-    ret=[]
-    for l in x:
-        t=l.strip().split(",")
-        if t==[""]:
-            continue
-        ret.append(Lost_Item(t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8], t[9]))
-    f.close()
-    return ret
-    
-def submit_lost_item(email,item):
-    print("SUBMIT LOST ITEM", email,repr(item))
-def delete_lost_item(email,item_id, category):
-    print("DELETE ITEM", email,item_id, category)
-#   V------return list of strings
 def get_notifications(email):
     print("GET NOTIFICATIONS", email)
     return ["Your item 456 was matched and is ready for pickup"]
-    
-def submit_found_item(item, worker_email):
-    print("SUBMIT FOUND ITEM", repr(item), worker_email)
-
-
-#    V------for this function make sure to provide pairs of lost and found items with match score sorted using match scores descending
-def get_matches(worker_email):
-    print("GET MATCHES", worker_email)
-    return [
-    [Lost_Item("123","p", "w", "b", "w", "l", "l", "o", "a", "Pending"), Found_Item("484","p", "w", "b", "w", "l", "l", "o", "a"), "90%"],
-    [Lost_Item("233","d", "s", "b", "w", "l", "l", "o", "a", "Pending"), Found_Item("324","s", "d", "b", "w", "l", "l", "o", "a"), "80%"],
-    ]
-    
-def confirm_match(lost_item_id, found_item_id, category):
-    print("CONFIRM MATCH", lost_item_id, found_item_id, category)
-
-#    V-----------the found item details with the pesel of the owner
-def get_confirmed_matches_with_user_pesel(worker_email):
-    print("GET CONFIRMED MATCHES", worker_email)
-    return [Matched_Item("123","p", "w", "b", "w", "l", "l", "o", "a", "1244324")]
-
-#    V------this function is called when worker finally hands over the found item to owner and it will archive the record
-def hand_over_and_archive_match(found_item_id, category):
-    print("HAND OVER", found_item_id, category)
-#   V------return list of strings
 def get_stats():
     print("GET STATS")
     return ["Number of lost items: 2"]
 #   V------return dictionary with relevant stuff
-def get_account_details(email):
-    print("GET ACCOUNT DETAILS", email)
-    return {"name":"Arin", "pesel": "21312121"}
 
 #==============================================================================================================================================================================
 
-class Item:
-    def __init__(self, category="", item_type="", color="", desc="", size="", material="", brand="", name=""):
-        self.category=category
-        self.item_type=item_type
-        self.color=color
-        self.desc=desc
-        self.size=size
-        self.material=material
-        self.brand=brand
-        self.name=name
-    def __repr__(self):
-        return f"Category:{self.category} ItemType:{self.item_type} Color:{self.color} Description:{self.desc} Size:{self.size} Material:{self.material} Brand:{self.brand} Name:{self.name}"
-class Lost_Item(Item):
-    def __init__(self, item_id="", category="", item_type="", color="", desc="", size="", material="", brand="", name="", status=""):
-        super().__init__(category, item_type, color, desc, size, material, brand, name)
-        self.item_id=item_id
-        self.status=status
-    def __repr__(self):
-        return f"ID:{self.item_id} "+f"Category:{self.category} ItemType:{self.item_type} Color:{self.color} Description:{self.desc} Size:{self.size} Material:{self.material} Brand:{self.brand} Name:{self.name}"+" Status:{self.status}"
-class Found_Item(Item):
-    def __init__(self, item_id="", category="", item_type="", color="", desc="", size="", material="", brand="", name=""):
-        super().__init__(category, item_type, color, desc, size, material, brand, name)
-        self.item_id=item_id
-    def __repr__(self):
-        return f"ID:{self.item_id} "+f"Category:{self.category} ItemType:{self.item_type} Color:{self.color} Description:{self.desc} Size:{self.size} Material:{self.material} Brand:{self.brand} Name:{self.name}"
-class Matched_Item(Item):
-    def __init__(self, item_id="", category="", item_type="", color="", desc="", size="", material="", brand="", name="", pesel=""):
-        super().__init__(category, item_type, color, desc, size, material, brand, name)
-        self.item_id=item_id
-        self.pesel=pesel
-    def __repr__(self):
-        return f"ID:{self.item_id} "+f"Category:{self.category} ItemType:{self.item_type} Color:{self.color} Description:{self.desc} Size:{self.size} Material:{self.material} Brand:{self.brand} Name:{self.name}"+" PESEL:{self.pesel}"
 class State(rx.State):
     email: str=""
     password: str=""
@@ -137,6 +45,7 @@ class State(rx.State):
     material: str=""
     brand: str="" 
     name: str=""
+    account_name: str=""
     is_other: bool=False
     show_size: bool=False
     show_material: bool=False
@@ -152,18 +61,19 @@ class State(rx.State):
             self.result=f"INVALID EMAIL FORMAT"
             return
         temp=login_user(self.email, self.password)
-        if temp==False:
+        if temp==None:
             self.result=f"INCORRECT EMAIL OR PASSWORD"
-        elif temp=="USER":
+        elif temp==RoleEnum.USER:
             self.logged_in_as_user=True
             self.not_logged_in=False
             self.load_submitted_lost_items()
-        elif temp=="WORKER":
+            self.account_name = get_account_details(self.email)["name"]
+        elif temp==RoleEnum.WORKER:
             self.logged_in_as_worker=True
             self.not_logged_in=False
             self.load_matches()
             self.load_confirmed_matches()
-        elif temp=="ADMIN":
+        elif temp==RoleEnum.ADMIN:
             self.logged_in_as_admin=True
             self.not_logged_in=False
     def logout(self):
@@ -171,6 +81,8 @@ class State(rx.State):
         self.logged_in_as_worker= False
         self.logged_in_as_admin= False
         self.not_logged_in=True
+        self.email = ""
+        self.password = ""
     def set_category(self, category: str):
         self.category=category
         self.item_type=""
@@ -208,27 +120,27 @@ class State(rx.State):
         self.load_submitted_lost_items()
     def call_delete_lost_item(self, item_id, category):
         self.temp2="ITEM DELETED"
-        delete_lost_item(self.email, item_id, category)
+        delete_lost_item(self.email, int(item_id), category)
         self.load_submitted_lost_items()
     def call_get_notifications(self):
         self.notifications=get_notifications(self.email)
     def call_submit_found_item(self):
         item=Item(self.category, self.item_type, self.color, self.desc, self.size, self.material, self.brand, self.name)
         self.temp="ITEM SUBMITTED"
-        submit_found_item(item, self.email)
+        submit_found_item(self.email, item)
         self.load_matches()
     def load_matches(self):
         t=get_matches(self.email)
         self.matches = [{"lost_item_id": x[0].item_id,"lost_item_category": x[0].category,"lost_item_type": x[0].item_type,"lost_item_color": x[0].color,"lost_item_desc": x[0].desc,"lost_item_size": x[0].size,"lost_item_material": x[0].material,"lost_item_brand": x[0].brand,"lost_item_name": x[0].name,"lost_item_status": x[0].status,
         "found_item_id": x[1].item_id,"found_item_category": x[1].category,"found_item_type": x[1].item_type,"found_item_color": x[1].color,"found_item_desc": x[1].desc,"found_item_size": x[1].size,"found_item_material": x[1].material,"found_item_brand": x[1].brand,"found_item_name": x[1].name, "match_score": x[2]} for x in t]
     def call_confirm_match(self,lost_item_id, found_item_id, category):
-        confirm_match(lost_item_id, found_item_id, category)
+        confirm_match(int(lost_item_id), int(found_item_id), category)
         self.load_matches()
     def load_confirmed_matches(self):
         t=get_confirmed_matches_with_user_pesel(self.email)
         self.confirmed_matches = [{"found_item_id": x.item_id,"found_item_category": x.category,"found_item_type": x.item_type,"found_item_color": x.color,"found_item_desc": x.desc,"found_item_size": x.size,"found_item_material": x.material,"found_item_brand": x.brand,"found_item_name": x.name, "owner_pesel": x.pesel} for x in t]
     def call_hand_over_and_archive_match(self,found_item_id, category):
-        hand_over_and_archive_match(found_item_id, category)
+        hand_over_and_archive_match(int(found_item_id), category)
         self.load_confirmed_matches()
 def index() -> rx.Component:
     return rx.cond(State.not_logged_in,
@@ -263,7 +175,7 @@ def index() -> rx.Component:
             rx.cond(State.logged_in_as_user,
                 rx.vstack(
                     rx.flex(
-                        rx.heading("Welcome back "+get_account_details(State.email)["name"]+"!", size="7"),
+                        rx.heading("Welcome back "+State.account_name+"!", size="7"),
                         rx.spacer(),
                         rx.button("Logout", color_scheme=button_style_2, on_click=State.logout),
                         width="100%",

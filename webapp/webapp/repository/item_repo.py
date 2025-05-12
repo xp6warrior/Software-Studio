@@ -57,7 +57,7 @@ def insert_update_item(model: object):
     elif not isinstance(model, rx.Model):
         raise Exception("insert_update_item parameter must be of type Model!")
     
-    model.pickup = datetime.now(timezone.utc)
+    model.time_stamp = datetime.now(timezone.utc)
 
     with rx.session() as session:
         session.add(model)

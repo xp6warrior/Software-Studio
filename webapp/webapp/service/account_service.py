@@ -8,10 +8,10 @@ def create_user(email: str, password: str, role: RoleEnum, pesel: int, name: str
 
 def login_user(email: str, password: str) -> RoleEnum:
     account = select_account(email)
-    if account.password == password:
-        return account.role
-    else:
+    if account == None or account.password != password:
         return None
+    else:
+        return account.role
     
 def get_account_details(email: str) -> dict[str, str]:
     selected = select_account(email)

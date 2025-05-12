@@ -73,7 +73,15 @@ def submit_found_item(email: str, item: Found_Item):
     model.status = "found"
     insert_update_item(model)
 
-def delete_lost_item(email: str, id: int, model_cls: object):
+# TODO change model_name:str back to model_cls:object
+def delete_lost_item(email: str, id: int, model_name: str):
+    model_cls = None
+    for m in models_list:
+        if m.__tablename__ == model_name:
+            model_cls = m
+    if model_cls == None:
+        return None
+    
     selected = select_item_by_id(id, model_cls)
     if selected == None:
         raise Exception(f"{model_cls.__name__} of id {id} does not exist!")
@@ -81,12 +89,19 @@ def delete_lost_item(email: str, id: int, model_cls: object):
         raise Exception("Attempt to delete item of other user!")
     delete_item(selected)
 
-def hand_over_and_archive_match(id: int, model_cls: object):
+def hand_over_and_archive_match(id: int, model_name: str):
+    model_cls = None
+    for m in models_list:
+        if m.__tablename__ == model_name:
+            model_cls = m
+    if model_cls == None:
+        return None
+    
     f_model = select_item_by_id(id, model_cls)
     matches = select_matches(id, model_cls)
 
     for m in matches:
-        if m.status == "confirmed":
+        if m.status == MatchStatus.CONFIRMED:
             l_model = select_item_by_id(m.lost_item_id, model_cls)
             owner = select_account(l_model.email)
 
@@ -101,6 +116,9 @@ def hand_over_and_archive_match(id: int, model_cls: object):
             archive_model = archive_cls(**data)
 
             insert_update_item(archive_model)
+            delete_item(f_model)
+            delete_item(l_model)
+            delete_item(m)
             break
 
 

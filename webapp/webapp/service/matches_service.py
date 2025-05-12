@@ -9,6 +9,10 @@ models_list = {
     if cls != Accounts and cls != Match
 }
 
+# TODO change model_name:str back to model_cls:object
+models_list2 = [cls for name, cls in inspect.getmembers(models, inspect.isclass)
+               if cls != models.Accounts and cls != models.Match]
+
 def get_matches(email: str) -> list:
     return_list = []
     found_models = select_items(email)
@@ -23,8 +27,7 @@ def get_matches(email: str) -> list:
             brand=getattr(f_model, "brand", None), name=getattr(f_model, "name", None)
         )
         for match in matches:
-            # TODO Make it so I can use enum here
-            if match.status != "unconfirmed":
+            if match.status != MatchStatus.UNCONFIRMED:
                 continue
             l_model = select_item_by_id(match.lost_item_id, models_list[match.table_name])
 
@@ -35,15 +38,22 @@ def get_matches(email: str) -> list:
                 brand=getattr(l_model, "brand", None), name=getattr(l_model, "name", None),
                 status=l_model.status
             )
-            return_list.append([l_item, f_item, "Schema doesn't store percentage yet :P"])
+            return_list.append([l_item, f_item, match.percentage])
 
     return return_list
 
 
-def confirm_match(lost_item_id: int, found_item_id: int, model_cls: object):
+def confirm_match(lost_item_id: int, found_item_id: int, model_name: str):
+    model_cls = None
+    for m in models_list2:
+        if m.__tablename__ == model_name:
+            model_cls = m
+    if model_cls == None:
+        return None
+    
     matches = select_matches(found_item_id, model_cls)
     for m in matches:
-        if m.lost_item_id == lost_item_id:
+        if m.lost_item_id == lost_item_id and m.status == MatchStatus.UNCONFIRMED:
             m.status = MatchStatus.CONFIRMED
             insert_update_match(m)
             break
@@ -56,18 +66,18 @@ def get_confirmed_matches_with_user_pesel(email: str):
         matches = select_matches(model.id, type(model))
 
         for match in matches:
-            # TODO Make it so I can use enum here
-            if match.status == "confirmed":
+            if match.status == MatchStatus.CONFIRMED:
                 l_model = select_item_by_id(match.lost_item_id, type(model))
                 owner = select_account(l_model.email)
 
                 m_item = Matched_Item(
-                    category=l_model.__tablename__, item_type=l_model.type, desc=l_model.description,
-                    item_id=str(l_model.id), color=getattr(l_model, "color", None),
-                    size=getattr(l_model, "size", None), material=getattr(l_model, "material", None),
-                    brand=getattr(l_model, "brand", None), name=getattr(l_model, "name", None),
+                    category=model.__tablename__, item_type=model.type, desc=model.description,
+                    item_id=str(model.id), color=getattr(model, "color", None),
+                    size=getattr(model, "size", None), material=getattr(model, "material", None),
+                    brand=getattr(model, "brand", None), name=getattr(model, "name", None),
                     pesel=str(owner.pesel)
                 )
+
                 return_list.append(m_item)
 
     return return_list

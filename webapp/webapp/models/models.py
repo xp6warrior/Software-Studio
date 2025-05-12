@@ -24,7 +24,7 @@ class PersonalItems(rx.Model, table=True):
     color: e.ColorEnum = e.enum_field(e.ColorEnum, "ColorEnum")
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    pickup: datetime.datetime
+    time_stamp: datetime.datetime
     
     email : str = Field(foreign_key="accounts.accounts.email")
 
@@ -38,7 +38,7 @@ class Jewelry(rx.Model, table=True):
     size: e.SizeEnum = e.enum_field(e.SizeEnum, "SizeEnum")
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    pickup: datetime.datetime
+    time_stamp: datetime.datetime
 
     email: str = Field(foreign_key="accounts.accounts.email")
 
@@ -53,7 +53,7 @@ class Accessories(rx.Model, table=True):
     brand: str
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    pickup: datetime.datetime
+    time_stamp: datetime.datetime
 
     email: str = Field(foreign_key="accounts.accounts.email")
 
@@ -69,7 +69,7 @@ class TravelItems(rx.Model, table=True):
     brand: str
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    pickup: datetime.datetime
+    time_stamp: datetime.datetime
 
     email: str = Field(foreign_key="accounts.accounts.email")
 
@@ -84,7 +84,7 @@ class ElectronicDevices(rx.Model, table=True):
     brand: str
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    pickup: datetime.datetime
+    time_stamp: datetime.datetime
 
     email: str = Field(foreign_key="accounts.accounts.email")
 
@@ -100,7 +100,7 @@ class Clothing(rx.Model, table=True):
     brand: str
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    pickup: datetime.datetime
+    time_stamp: datetime.datetime
 
     email: str = Field(foreign_key="accounts.accounts.email")
 
@@ -116,7 +116,7 @@ class OfficeItems(rx.Model, table=True):
     name: str
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    pickup: datetime.datetime
+    time_stamp: datetime.datetime
 
     email: str = Field(foreign_key="accounts.accounts.email")
 
@@ -133,7 +133,7 @@ class OtherItems(rx.Model, table=True):
     name: str
     description: str
     status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    pickup: datetime.datetime
+    time_stamp: datetime.datetime
 
     email: str = Field(foreign_key="accounts.accounts.email")
 
