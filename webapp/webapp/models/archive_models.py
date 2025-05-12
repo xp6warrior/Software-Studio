@@ -1,50 +1,44 @@
 import reflex as rx
 from sqlmodel import Field
 from . import enums as e
-import datetime
+from datetime import datetime
 
-class Accounts(rx.Model, table=True):
-    __tablename__ = "accounts"
-    __table_args__ = {"schema": "accounts"}
+# TODO find a better way to define these classes
 
-    email: str = Field(primary_key=True)
-    password: str
-    role: e.RoleEnum = e.enum_field(e.RoleEnum, "RoleEnum")
-    pesel: int = Field(nullable=False, unique=True)
-    name: str
-    surname: str
-
-
-class PersonalItems(rx.Model, table=True):
+class ArchivePersonalItems(rx.Model, table=True):
     __tablename__ = "personalitems"
-    __table_args__ = {"schema": "lost_found"}
+    __table_args__ = {"schema": "archive"}
 
     id: int = Field(primary_key=True)
     type: e.PersonalItemType = e.enum_field(e.PersonalItemType, "PersonalItemType")
     color: e.ColorEnum = e.enum_field(e.ColorEnum, "ColorEnum")
     description: str
-    status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    time_stamp: datetime.datetime
-    
-    email : str = Field(foreign_key="accounts.accounts.email")
+    pickup: datetime
 
-class Jewelry(rx.Model, table=True):
+    email: str
+    username: str
+    surname: str
+    pesel: int = Field(unique=True, nullable=False)
+
+class ArchiveJewelry(rx.Model, table=True):
     __tablename__ = "jewelry"
-    __table_args__ = {"schema": "lost_found"}
+    __table_args__ = {"schema": "archive"}
 
     id: int = Field(primary_key=True)
     type: e.JewelryType = e.enum_field(e.JewelryType, "JewelryType")
     color: e.ColorEnum = e.enum_field(e.ColorEnum, "ColorEnum")
     size: e.SizeEnum = e.enum_field(e.SizeEnum, "SizeEnum")
     description: str
-    status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    time_stamp: datetime.datetime
+    pickup: datetime
 
-    email: str = Field(foreign_key="accounts.accounts.email")
+    email: str
+    username: str
+    surname: str
+    pesel: int = Field(unique=True, nullable=False)
 
-class Accessories(rx.Model, table=True):
+class ArchiveAccessories(rx.Model, table=True):
     __tablename__ = "accessories"
-    __table_args__ = {"schema": "lost_found"}
+    __table_args__ = {"schema": "archive"}
 
     id: int = Field(primary_key=True)
     type: e.AccessoryType = e.enum_field(e.AccessoryType, "AccessoryType")
@@ -52,14 +46,16 @@ class Accessories(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     brand: str
     description: str
-    status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    time_stamp: datetime.datetime
+    pickup: datetime
 
-    email: str = Field(foreign_key="accounts.accounts.email")
+    email: str
+    username: str
+    surname: str
+    pesel: int = Field(unique=True, nullable=False)
 
-class TravelItems(rx.Model, table=True):
+class ArchiveTravelItems(rx.Model, table=True):
     __tablename__ = "travelitems"
-    __table_args__ = {"schema": "lost_found"}
+    __table_args__ = {"schema": "archive"}
 
     id: int = Field(primary_key=True)
     type: e.TravelItemType = e.enum_field(e.TravelItemType, "TravelItemType")
@@ -68,14 +64,16 @@ class TravelItems(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     brand: str
     description: str
-    status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    time_stamp: datetime.datetime
+    pickup: datetime
 
-    email: str = Field(foreign_key="accounts.accounts.email")
+    email: str
+    username: str
+    surname: str
+    pesel: int = Field(unique=True, nullable=False)
 
-class ElectronicDevices(rx.Model, table=True):
+class ArchiveElectronicDevices(rx.Model, table=True):
     __tablename__ = "electronicdevices"
-    __table_args__ = {"schema": "lost_found"}
+    __table_args__ = {"schema": "archive"}
 
     id: int = Field(primary_key=True)
     type: e.ElectronicDeviceType = e.enum_field(e.ElectronicDeviceType, "ElectronicDeviceType")
@@ -83,14 +81,16 @@ class ElectronicDevices(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     brand: str
     description: str
-    status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    time_stamp: datetime.datetime
+    pickup: datetime
 
-    email: str = Field(foreign_key="accounts.accounts.email")
+    email: str
+    username: str
+    surname: str
+    pesel: int = Field(unique=True, nullable=False)
 
-class Clothing(rx.Model, table=True):
+class ArchiveClothing(rx.Model, table=True):
     __tablename__ = "clothing"
-    __table_args__ = {"schema": "lost_found"}
+    __table_args__ = {"schema": "archive"}
 
     id: int = Field(primary_key=True)
     type: e.ClothingType = e.enum_field(e.ClothingType, "ClothingType")
@@ -99,14 +99,16 @@ class Clothing(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     brand: str
     description: str
-    status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    time_stamp: datetime.datetime
+    pickup: datetime
 
-    email: str = Field(foreign_key="accounts.accounts.email")
+    email: str
+    username: str
+    surname: str
+    pesel: int = Field(unique=True, nullable=False)
 
-class OfficeItems(rx.Model, table=True):
+class ArchiveOfficeItems(rx.Model, table=True):
     __tablename__ = "officeitems"
-    __table_args__ = {"schema": "lost_found"}
+    __table_args__ = {"schema": "archive"}
 
     id: int = Field(primary_key=True)
     type: e.OfficeItemType = e.enum_field(e.OfficeItemType, "OfficeItemType")
@@ -115,14 +117,16 @@ class OfficeItems(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     name: str
     description: str
-    status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    time_stamp: datetime.datetime
+    pickup: datetime
 
-    email: str = Field(foreign_key="accounts.accounts.email")
+    email: str
+    username: str
+    surname: str
+    pesel: int = Field(unique=True, nullable=False)
 
-class OtherItems(rx.Model, table=True):
+class ArchiveOtherItems(rx.Model, table=True):
     __tablename__ = "otheritems"
-    __table_args__ = {"schema": "lost_found"}
+    __table_args__ = {"schema": "archive"}
 
     id: int = Field(primary_key=True)
     type: str
@@ -132,18 +136,9 @@ class OtherItems(rx.Model, table=True):
     brand: str
     name: str
     description: str
-    status: e.StatusEnum = e.enum_field(e.StatusEnum, "StatusEnum")
-    time_stamp: datetime.datetime
+    pickup: datetime
 
-    email: str = Field(foreign_key="accounts.accounts.email")
-
-class Match(rx.Model, table=True):
-    __tablename__ = "match"
-    __table_args__ = {"schema": "lost_found"}
-
-    id: int = Field(primary_key=True)
-    table_name: str
-    lost_item_id: int
-    found_item_id: int
-    status: e.MatchStatus = e.enum_field(e.MatchStatus, "MatchStatus")
-    percentage: int
+    email: str
+    username: str
+    surname: str
+    pesel: int = Field(unique=True, nullable=False)
