@@ -10,7 +10,6 @@ bg_style={"background": "linear-gradient(to bottom right, #a34fe2, #184ef2)", "p
 button_style_1="green"
 button_style_2="red"
 
-
 #    V-------for backend. this is just testing code.
 #======================================================================================================================================================================
 
@@ -20,6 +19,7 @@ f.close()
 
 #   V------return account role if creds valid and False if not
 def login_user(email, password):
+    print("LOGIN", email, password)
     users={"u@g.c": "p", "w@g.c": "p", "a@g.c": "p"}
     if email in users and users[email]==password:
         if email[0]=="u":
@@ -32,8 +32,9 @@ def login_user(email, password):
         return False
 #   V------return a list of Lost_Item objects
 def get_submitted_lost_items(email):
+    print("GET SUBMITTED LOST ITEMS", email)
     f=open("./test.txt", "r")
-    x=f.readlines()
+    x=["145,j,d,h,v,wa,sa,d,j,Pending","123,p,w,b,w,l,l,o,a,Ready to Pickup"]
     ret=[]
     for l in x:
         t=l.strip().split(",")
@@ -44,56 +45,44 @@ def get_submitted_lost_items(email):
     return ret
     
 def submit_lost_item(email,item):
-    f=open("./test.txt","a")
-    f.write(f"345,{item.category},{item.item_type},{item.color},{item.desc},{item.size},{item.material},{item.brand},{item.name},Pending\n")
-    f.close()
+    print("SUBMIT LOST ITEM", email,repr(item))
 def delete_lost_item(email,item_id, category):
-    f=open("./test.txt", "r")
-    x=f.readlines()
-    ret=[]
-    for l in x:
-        t=l.strip().split(",")
-        if t==[""]:
-            continue
-        if t[0]==item_id:
-            continue
-        ret.append(l)
-    f.close()
-    f=open("./test.txt","w")
-    for l in ret:
-        f.write(l+"\n")
-    f.close()
+    print("DELETE ITEM", email,item_id, category)
 #   V------return list of strings
 def get_notifications(email):
+    print("GET NOTIFICATIONS", email)
     return ["Your item 456 was matched and is ready for pickup"]
     
 def submit_found_item(item, worker_email):
-    f=open("./test2.txt","a")
-    f.write(f"\n345,{item.category},{item.item_type},{item.color},{item.desc},{item.size},{item.material},{item.brand},{item.name}\n")
-    f.close()
+    print("SUBMIT FOUND ITEM", repr(item), worker_email)
+
 
 #    V------for this function make sure to provide pairs of lost and found items with match score sorted using match scores descending
 def get_matches(worker_email):
+    print("GET MATCHES", worker_email)
     return [
     [Lost_Item("123","p", "w", "b", "w", "l", "l", "o", "a", "Pending"), Found_Item("484","p", "w", "b", "w", "l", "l", "o", "a"), "90%"],
     [Lost_Item("233","d", "s", "b", "w", "l", "l", "o", "a", "Pending"), Found_Item("324","s", "d", "b", "w", "l", "l", "o", "a"), "80%"],
     ]
     
 def confirm_match(lost_item_id, found_item_id, category):
-    pass
+    print("CONFIRM MATCH", lost_item_id, found_item_id, category)
 
 #    V-----------the found item details with the pesel of the owner
 def get_confirmed_matches_with_user_pesel(worker_email):
+    print("GET CONFIRMED MATCHES", worker_email)
     return [Matched_Item("123","p", "w", "b", "w", "l", "l", "o", "a", "1244324")]
 
 #    V------this function is called when worker finally hands over the found item to owner and it will archive the record
 def hand_over_and_archive_match(found_item_id, category):
-    pass
+    print("HAND OVER", found_item_id, category)
 #   V------return list of strings
 def get_stats():
+    print("GET STATS")
     return ["Number of lost items: 2"]
 #   V------return dictionary with relevant stuff
 def get_account_details(email):
+    print("GET ACCOUNT DETAILS", email)
     return {"name":"Arin", "pesel": "21312121"}
 
 #==============================================================================================================================================================================
@@ -208,7 +197,8 @@ class State(rx.State):
     submitted_lost_items: list[dict] = []
     matches: list[dict]=[]
     confirmed_matches: list[dict] =[]
-    def load_submitted_lost_items(self):
+    notifications: list[str]=[]
+    def load_submitted_lost_items(self):   		
         t=get_submitted_lost_items(self.email)
         self.submitted_lost_items = [{"item_id": x.item_id,"category": x.category,"item_type": x.item_type,"color": x.color,"desc": x.desc,"size": x.size,"material": x.material,"brand": x.brand,"name": x.name,"status": x.status} for x in t]
     def call_submit_lost_item(self):
@@ -216,28 +206,30 @@ class State(rx.State):
         self.temp="ITEM SUBMITTED"
         submit_lost_item(self.email, item)
         self.load_submitted_lost_items()
-    def call_delete_lost_item(self, item_id):
+    def call_delete_lost_item(self, item_id, category):
         self.temp2="ITEM DELETED"
-        delete_lost_item(self.email, item_id)
+        delete_lost_item(self.email, item_id, category)
         self.load_submitted_lost_items()
+    def call_get_notifications(self):
+        self.notifications=get_notifications(self.email)
     def call_submit_found_item(self):
         item=Item(self.category, self.item_type, self.color, self.desc, self.size, self.material, self.brand, self.name)
         self.temp="ITEM SUBMITTED"
-        submit_found_item(item, State.email)
-        self.load_found_items()
+        submit_found_item(item, self.email)
+        self.load_matches()
     def load_matches(self):
-        t=get_matches(State.email)
+        t=get_matches(self.email)
         self.matches = [{"lost_item_id": x[0].item_id,"lost_item_category": x[0].category,"lost_item_type": x[0].item_type,"lost_item_color": x[0].color,"lost_item_desc": x[0].desc,"lost_item_size": x[0].size,"lost_item_material": x[0].material,"lost_item_brand": x[0].brand,"lost_item_name": x[0].name,"lost_item_status": x[0].status,
         "found_item_id": x[1].item_id,"found_item_category": x[1].category,"found_item_type": x[1].item_type,"found_item_color": x[1].color,"found_item_desc": x[1].desc,"found_item_size": x[1].size,"found_item_material": x[1].material,"found_item_brand": x[1].brand,"found_item_name": x[1].name, "match_score": x[2]} for x in t]
     def call_confirm_match(self,lost_item_id, found_item_id, category):
-        self.load_matches()
         confirm_match(lost_item_id, found_item_id, category)
+        self.load_matches()
     def load_confirmed_matches(self):
-        t=get_confirmed_matches_with_user_pesel(State.email)
+        t=get_confirmed_matches_with_user_pesel(self.email)
         self.confirmed_matches = [{"found_item_id": x.item_id,"found_item_category": x.category,"found_item_type": x.item_type,"found_item_color": x.color,"found_item_desc": x.desc,"found_item_size": x.size,"found_item_material": x.material,"found_item_brand": x.brand,"found_item_name": x.name, "owner_pesel": x.pesel} for x in t]
     def call_hand_over_and_archive_match(self,found_item_id, category):
-        self.load_confirmed_matches()
         hand_over_and_archive_match(found_item_id, category)
+        self.load_confirmed_matches()
 def index() -> rx.Component:
     return rx.cond(State.not_logged_in,
         rx.center(
@@ -448,7 +440,7 @@ def index() -> rx.Component:
                                 State.submitted_lost_items,
                                 lambda item: rx.hstack(
                                     rx.text(f"{item['item_id']} {item['category']} {item['item_type']} {item['color']} {item['desc']} {item['size']} {item['material']} {item['brand']} {item['name']} {item['status']}"),
-                                    rx.button("Delete", color_scheme=button_style_2, on_click=[State.call_delete_lost_item(item["item_id"])])
+                                    rx.button("Delete", color_scheme=button_style_2, on_click=[State.call_delete_lost_item(item["item_id"], item['category'])])
                                 )
                             )
                         ),
@@ -463,7 +455,10 @@ def index() -> rx.Component:
                         }
                     ),
                     rx.box(
-                        rx.heading("Your notifications", size="3"),
+                        rx.hstack(
+                            rx.heading("Your notifications", size="3"),
+                            rx.button("Refresh", color_scheme=button_style_1, on_click=State.call_get_notifications)
+                        ),
                         rx.text(repr(get_notifications(State.email))),
                         style={
                                 "background": "rgba(255, 255, 255, 0.05)",
@@ -634,7 +629,7 @@ def index() -> rx.Component:
                                 placeholder="Description",
                                 on_change=State.set_desc,
                             ),
-                                rx.button("SUBMIT", on_click=State.call_submit_lost_item),
+                                rx.button("SUBMIT", on_click=State.call_submit_found_item),
                                 rx.text(State.temp),
                     ),
                     rx.text("FOUND ITEMS AND THEIR MATCHES (TODO: BUTTON HERE FOR EACH MATCH AND CALL FUNCTION)"),
