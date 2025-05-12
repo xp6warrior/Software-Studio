@@ -41,8 +41,11 @@ services:
       context: ./rte
       dockerfile: Dockerfile
     container_name: ss-rte
+    volumes:
+      - ./rte:/rte
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - ss-network
 

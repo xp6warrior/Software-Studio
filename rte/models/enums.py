@@ -1,46 +1,32 @@
-from enum import Enum
+from enum import Enum as PyEnum
 from sqlalchemy import Column, Enum as dbEnum
-from sqlmodel import Field
 
 def enum_field(enum_cls, enum_name):
-    return Field(
-        sa_column = Column(dbEnum(
-            enum_cls,
-            name=enum_name,
-            create_type=False,
-            native_enum=False,
-            values_callable=lambda x: [e.value for e in x]
-        ), nullable=False)
-    )
+    return Column(dbEnum(
+        enum_cls,
+        name=enum_name,
+        create_type=False,
+        native_enum=False,
+        values_callable=lambda x: [e.value for e in x]
+    ), nullable=False)
 
-class ModelsEnum(str, enum.Enum):
-    PERSONAL_ITEM = "personal_items"
-    JEWELRY = "jewelry"
-    ACCESSORIES = "accessories"
-    TRAVEL_ITEMS = "travel_items"
-    ELECTRONIC_DEVICES = "electronic_devices"
-    CLOTHING = "clothing"
-    OFFICE_ITEMS = "office_items"
-    OTHER_ITEMS = "other_items"
-
-class RoleEnum(str, enum.Enum):
+class RoleEnum(str, PyEnum):
     USER = "user"
     WORKER = "worker"
     ADMIN = "admin"
 
-class StatusEnum(str, enum.Enum):
+class StatusEnum(str, PyEnum):
     LOST = "lost"
     FOUND = "found"
-    CONFIRMED = "confirmed"
 
-class SizeEnum(Enum):
+class SizeEnum(str, PyEnum):
     XS = "xs"
     S = "s"
     M = "m"
     L = "l"
     XL = "xl"
 
-class ColorEnum(str, enum.Enum):
+class ColorEnum(str, PyEnum):
     RED = "red"
     GREEN = "green"
     BLUE = "blue"
@@ -58,7 +44,7 @@ class ColorEnum(str, enum.Enum):
     BEIGE = "beige"
     OTHER = "other"
 
-class MaterialEnum(str, enum.Enum):
+class MaterialEnum(str, PyEnum):
     WOOD = "wood"
     METAL = "metal"
     PLASTIC = "plastic"
@@ -70,27 +56,27 @@ class MaterialEnum(str, enum.Enum):
     PAPER = "paper"
     OTHER = "other"
 
-class PersonalItemType(str, enum.Enum):
+class PersonalItemType(str, PyEnum):
     ID_CARD = "id_card"
     PASSPORT = "passport"
     KEYS = "keys"
     CREDIT_DEBIT_CARD = "credit_debit_card"
     OTHER = "other"
 
-class JewelryType(str, enum.Enum):
+class JewelryType(str, PyEnum):
     RING = "ring"
     EARRINGS = "earrings"
     NECKLACE = "necklace"
     PIERCING = "piercing"
     OTHER = "other"
 
-class AccessoryType(str, enum.Enum):
+class AccessoryType(str, PyEnum):
     GLASSES = "glasses"
     SUNGLASSES = "sunglasses"
     WRISTWATCH = "wristwatch"
     OTHER = "other"
 
-class TravelItemType(str, enum.Enum):
+class TravelItemType(str, PyEnum):
     SUITCASE = "suitcase"
     HANDBAG = "handbag"
     BACKPACK = "backpack"
@@ -101,7 +87,7 @@ class TravelItemType(str, enum.Enum):
     WATER_BOTTLE = "water_bottle"
     OTHER = "other"
 
-class ElectronicDeviceType(str, enum.Enum):
+class ElectronicDeviceType(str, PyEnum):
     PHONE = "phone"
     LAPTOP = "laptop"
     TABLET = "tablet"
@@ -113,7 +99,7 @@ class ElectronicDeviceType(str, enum.Enum):
     POWERBANK = "powerbank"
     OTHER = "other"
 
-class ClothingType(str, enum.Enum):
+class ClothingType(str, PyEnum):
     COAT = "coat"
     JACKET = "jacket"
     GLOVES = "gloves"
@@ -122,13 +108,13 @@ class ClothingType(str, enum.Enum):
     SHOES = "shoes"
     OTHER = "other"
 
-class OfficeItemType(str, enum.Enum):
+class OfficeItemType(str, PyEnum):
     PEN = "pen"
     FOLDER = "folder"
     BOOK = "book"
     OTHER = "other"
 
-class MatchStatus(str, enum.Enum):
+class MatchStatus(str, PyEnum):
     UNCONFIRMED = "unconfirmed"
     CONFIRMED = "confirmed"
     DECLINED = "declined"

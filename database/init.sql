@@ -220,7 +220,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.OtherItems (
 );
 
 DO $$ BEGIN
-    CREATE TYPE matchstatus AS ENUM ('unconfirmed', 'confirmed', 'declined');
+    CREATE TYPE MatchStatus AS ENUM ('unconfirmed', 'confirmed', 'declined');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS Lost_found.Match (
     table_name TEXT NOT NULL,
     lost_item_id INTEGER NOT NULL,
     found_item_id INTEGER NOT NULL,
-    status matchstatus NOT NULL,
+    status MatchStatus NOT NULL,
     percentage INT NOT NULL
 );
 
@@ -347,7 +347,6 @@ CREATE TABLE IF NOT EXISTS Archive.OtherItems (
     username TEXT NOT NULL,
     surname TEXT NOT NULL,
     pesel INT NOT NULL UNIQUE
->>>>>>> arin
 );
 
 COMMIT;

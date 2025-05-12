@@ -10,17 +10,17 @@ class Accounts(Base):
 
     email = Column(String, primary_key=True)
     password = Column(String, nullable=False)
-    role = Column(Enum(RoleEnum), nullable=False)
+    role = enum_field(RoleEnum, "RoleEnum")
 
 class PersonalItems(Base):
     __tablename__ = 'personalitems'
     __table_args__ = {'schema': 'lost_found'}
 
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(PersonalItemType), nullable=False)
-    color = Column(Enum(ColorEnum), nullable=False)
+    type = enum_field(PersonalItemType, "PersonalItemType")
+    color = enum_field(ColorEnum, "ColorEnum")
     description = Column(String)
-    status = Column(Enum(StatusEnum), nullable=False)
+    status = enum_field(StatusEnum, "StatusEnum")
     email = Column(String, ForeignKey('accounts.accounts.email'), nullable=False)
 
 class Jewelry(Base):
@@ -28,11 +28,11 @@ class Jewelry(Base):
     __table_args__ = {'schema': 'lost_found'}
 
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(JewelryType), nullable=False)
-    color = Column(Enum(ColorEnum), nullable=False)
-    size = Column(Enum(SizeEnum), nullable=False)
+    type = enum_field(JewelryType, "JewelryType")
+    color = enum_field(ColorEnum, "ColorEnum")
+    size = enum_field(SizeEnum, "SizeEnum")
     description = Column(String)
-    status = Column(Enum(StatusEnum), nullable=False)
+    status = enum_field(StatusEnum, "StatusEnum")
     email = Column(String, ForeignKey('accounts.accounts.email'), nullable=False)
 
 class Accessories(Base):
@@ -40,12 +40,12 @@ class Accessories(Base):
     __table_args__ = {'schema': 'lost_found'}
 
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(AccessoryType), nullable=False)
-    color = Column(Enum(ColorEnum), nullable=False)
-    material = Column(Enum(MaterialEnum), nullable=False)
+    type = enum_field(AccessoryType, "AccessoryType")
+    color = enum_field(ColorEnum, "ColorEnum")
+    material = enum_field(MaterialEnum, "MaterialEnum")
     brand = Column(String)
     description = Column(String)
-    status = Column(Enum(StatusEnum), nullable=False)
+    status = enum_field(StatusEnum, "StatusEnum")
     email = Column(String, ForeignKey('accounts.accounts.email'), nullable=False)
 
 class TravelItems(Base):
@@ -53,13 +53,13 @@ class TravelItems(Base):
     __table_args__ = {'schema': 'lost_found'}
 
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(TravelItemType), nullable=False)
-    color = Column(Enum(ColorEnum), nullable=False)
-    size = Column(Enum(SizeEnum), nullable=False)
-    material = Column(Enum(MaterialEnum), nullable=False)
+    type = enum_field(TravelItemType, "TravelItemType")
+    color = enum_field(ColorEnum, "ColorEnum")
+    size = enum_field(SizeEnum, "SizeEnum")
+    material = enum_field(MaterialEnum, "MaterialEnum")
     brand = Column(String)
     description = Column(String)
-    status = Column(Enum(StatusEnum), nullable=False)
+    status = enum_field(StatusEnum, "StatusEnum")
     email = Column(String, ForeignKey('accounts.accounts.email'), nullable=False)
 
 class ElectronicDevices(Base):
@@ -67,12 +67,12 @@ class ElectronicDevices(Base):
     __table_args__ = {'schema': 'lost_found'}
 
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(ElectronicDeviceType), nullable=False)
-    color = Column(Enum(ColorEnum), nullable=False)
-    material = Column(Enum(MaterialEnum), nullable=False)
+    type = enum_field(ElectronicDeviceType, "ElectronicDeviceType")
+    color = enum_field(ColorEnum, "ColorEnum")
+    material = enum_field(MaterialEnum, "MaterialEnum")
     brand = Column(String)
     description = Column(String)
-    status = Column(Enum(StatusEnum), nullable=False)
+    status = enum_field(StatusEnum, "StatusEnum")
     email = Column(String, ForeignKey('accounts.accounts.email'), nullable=False)
 
 class Clothing(Base):
@@ -80,13 +80,13 @@ class Clothing(Base):
     __table_args__ = {'schema': 'lost_found'}
 
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(ClothingType), nullable=False)
-    color = Column(Enum(ColorEnum), nullable=False)
-    size = Column(Enum(SizeEnum), nullable=False)
-    material = Column(Enum(MaterialEnum), nullable=False)
+    type = enum_field(ClothingType, "ClothingType")
+    color = enum_field(ColorEnum, "ColorEnum")
+    size = enum_field(SizeEnum, "SizeEnum")
+    material = enum_field(MaterialEnum, "MaterialEnum")
     brand = Column(String)
     description = Column(String)
-    status = Column(Enum(StatusEnum), nullable=False)
+    status = enum_field(StatusEnum, "StatusEnum")
     email = Column(String, ForeignKey('accounts.accounts.email'), nullable=False)
 
 class OfficeItems(Base):
@@ -94,13 +94,13 @@ class OfficeItems(Base):
     __table_args__ = {'schema': 'lost_found'}
 
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(OfficeItemType), nullable=False)
-    color = Column(Enum(ColorEnum), nullable=False)
-    size = Column(Enum(SizeEnum), nullable=False)
-    material = Column(Enum(MaterialEnum), nullable=False)
+    type = enum_field(OfficeItemType, "OfficeTypeItem")
+    color = enum_field(ColorEnum, "ColorEnum")
+    size = enum_field(SizeEnum, "SizeEnum")
+    material = enum_field(MaterialEnum, "MaterialEnum")
     name = Column(String)
     description = Column(String)
-    status = Column(Enum(StatusEnum), nullable=False)
+    status = enum_field(StatusEnum, "StatusEnum")
     email = Column(String, ForeignKey('accounts.accounts.email'), nullable=False)
 
 class OtherItems(Base):
@@ -109,13 +109,13 @@ class OtherItems(Base):
 
     id = Column(Integer, primary_key=True)
     type = Column(String)  # free text
-    color = Column(Enum(ColorEnum), nullable=False)
-    size = Column(Enum(SizeEnum), nullable=False)
-    material = Column(Enum(MaterialEnum), nullable=False)
+    color = enum_field(ColorEnum, "ColorEnum")
+    size = enum_field(SizeEnum, "SizeEnum")
+    material = enum_field(MaterialEnum, "MaterialEnum")
     brand = Column(String)
     name = Column(String)
     description = Column(String)
-    status = Column(Enum(StatusEnum), nullable=False)
+    status = enum_field(StatusEnum, "StatusEnum")
     email = Column(String, ForeignKey('accounts.accounts.email'), nullable=False)
 
 class Match(Base):
@@ -126,5 +126,5 @@ class Match(Base):
     table_name = Column(String, nullable=False)
     lost_item_id = Column(Integer, nullable=False)
     found_item_id = Column(Integer, nullable=False)
-    status = Column(Enum(MatchStatus, name='matchstatus'), nullable=False, default=MatchStatus.UNCONFIRMED)
+    status = enum_field(MatchStatus, "MatchStatus")
     percentage = Column(Integer, nullable=False)

@@ -13,7 +13,7 @@ class ArchivePersonalItems(rx.Model, table=True):
     type: e.PersonalItemType = e.enum_field(e.PersonalItemType, "PersonalItemType")
     color: e.ColorEnum = e.enum_field(e.ColorEnum, "ColorEnum")
     description: str
-    pickup: datetime
+    time_stamp: datetime
 
     email: str
     username: str
@@ -29,7 +29,7 @@ class ArchiveJewelry(rx.Model, table=True):
     color: e.ColorEnum = e.enum_field(e.ColorEnum, "ColorEnum")
     size: e.SizeEnum = e.enum_field(e.SizeEnum, "SizeEnum")
     description: str
-    pickup: datetime
+    time_stamp: datetime
 
     email: str
     username: str
@@ -46,7 +46,7 @@ class ArchiveAccessories(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     brand: str
     description: str
-    pickup: datetime
+    time_stamp: datetime
 
     email: str
     username: str
@@ -64,7 +64,7 @@ class ArchiveTravelItems(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     brand: str
     description: str
-    pickup: datetime
+    time_stamp: datetime
 
     email: str
     username: str
@@ -81,7 +81,7 @@ class ArchiveElectronicDevices(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     brand: str
     description: str
-    pickup: datetime
+    time_stamp: datetime
 
     email: str
     username: str
@@ -99,7 +99,7 @@ class ArchiveClothing(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     brand: str
     description: str
-    pickup: datetime
+    time_stamp: datetime
 
     email: str
     username: str
@@ -117,7 +117,7 @@ class ArchiveOfficeItems(rx.Model, table=True):
     material: e.MaterialEnum = e.enum_field(e.MaterialEnum, "MaterialEnum")
     name: str
     description: str
-    pickup: datetime
+    time_stamp: datetime
 
     email: str
     username: str
@@ -136,7 +136,7 @@ class ArchiveOtherItems(rx.Model, table=True):
     brand: str
     name: str
     description: str
-    pickup: datetime
+    time_stamp: datetime
 
     email: str
     username: str

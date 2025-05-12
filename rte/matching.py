@@ -4,6 +4,7 @@ from models.models import Match
 from models import models
 from models import enums
 from db import SessionLocal
+import logging
 
 MATCH_THRESHOLDS = {
     models.PersonalItems: 1,
@@ -40,8 +41,8 @@ def match_items():
     for model_cls, (attrs, threshold) in MATCH_CONFIG.items():
         table_name = model_cls.__tablename__
 
-        lost_items = get_relevant_items(session, model_cls, 'lost')
-        found_items = get_relevant_items(session, model_cls, 'found')
+        lost_items = get_relevant_items(session, model_cls, enums.StatusEnum.LOST)
+        found_items = get_relevant_items(session, model_cls, enums.StatusEnum.FOUND)
 
         for lost in lost_items:
             for found in found_items:
@@ -67,9 +68,11 @@ def match_items():
                         status=enums.MatchStatus.UNCONFIRMED,
                         percentage=percentage
                     )
+                    # TODO Fix the error type mismatch error between db and model class
+                    # Move commit to the end of the function to recreate
                     session.add(new_match)
+                    session.commit()
 
-    session.commit()
     session.close()
 
 def get_stats():

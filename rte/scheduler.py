@@ -12,7 +12,7 @@ def run_matching_job():
 if __name__ == "__main__":
     scheduler = BlockingScheduler(timezone='Europe/Warsaw')
 
-    scheduler.add_job(run_matching_job, 'cron', hour='7,14', minute=0)
+    scheduler.add_job(run_matching_job, 'interval', seconds=10)
 
     logging.info("Scheduler started. Matching will run at 7AM and 2PM daily.")
     scheduler.start()
