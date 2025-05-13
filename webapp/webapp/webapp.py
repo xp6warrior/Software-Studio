@@ -10,7 +10,7 @@ from webapp.service.matches_service import *
 #   V------this "apperance" "config" we can read this from a file
 app_name="Back2You"
 app_desc="Report lost item or turn in what you found."
-logo="/BTUw.png"
+logo="/BackToUw.png"
 bg_style={"background": "linear-gradient(to bottom right, #a34fe2, #184ef2)", "padding": "2rem"}
 button_style_1="green"
 button_style_2="red"
@@ -79,7 +79,7 @@ class State(rx.State):
         elif temp==RoleEnum.ADMIN:
             self.logged_in_as_admin=True
             self.not_logged_in=False
-            return redirect("/") #I add this
+            return redirect("/admin") #I add this
     def logout(self):
         self.logged_in_as_user= False
         self.logged_in_as_worker= False
@@ -157,7 +157,7 @@ def index() -> rx.Component:
                     # Navigation Bar
                     rx.hstack(
                         rx.hstack(
-                            rx.image(src="/BTUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
+                            rx.image(src="/BackToUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
                             rx.heading("Back2You", font_size="xl", color="white"),
                             spacing="2",
                             align="center",
@@ -264,7 +264,7 @@ def UserDashboard() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.hstack(
-                    rx.image(src="/BTUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
+                    rx.image(src="/BackToUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
                     rx.heading("Back2You", font_size="xl", color="white"),
                     spacing="2",
                     align="center",
@@ -284,7 +284,7 @@ def UserDashboard() -> rx.Component:
             rx.hstack(
                 rx.box(
                     rx.vstack(
-                        rx.heading("Welcome, Back2You User!", font_size="4xl", color="white", mb="2"),
+                        rx.heading(f"Welcome, {State.account_name}!", font_size="4xl", color="white", mb="2"),
                         rx.text(
                             "Start by submitting a new lost item or checking your notifications.",
                             color="gray.300",
@@ -345,7 +345,7 @@ def SubmitLostItemPage() -> rx.Component:
             # Navigation bar
             rx.hstack(
                 rx.hstack(
-                    rx.image(src="/BTUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
+                    rx.image(src="/BackToUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
                     rx.heading("Back2You", font_size="xl", color="white"),
                     spacing="2",
                     align="center",
@@ -551,7 +551,7 @@ def ViewLostReportPage() -> rx.Component:
             # Navigation bar
             rx.hstack(
                 rx.hstack(
-                    rx.image(src="/BTUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
+                    rx.image(src="/BackToUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
                     rx.heading("Back2You", font_size="xl", color="white"),
                     spacing="2",
                     align="center",
@@ -643,7 +643,7 @@ def WorkerDashboard() -> rx.Component:
             # Navbar
             rx.hstack(
                 rx.hstack(
-                    rx.image(src="/BTUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
+                    rx.image(src="/BackToUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
                     rx.heading("Back2You", font_size="xl", color="white"),
                     spacing="2",
                     align="center",
@@ -665,7 +665,7 @@ def WorkerDashboard() -> rx.Component:
             rx.flex(
                 rx.box(
                     rx.vstack(
-                        rx.heading("Welcome!", font_size="2xl", color="white"),
+                        rx.heading(f"Welcome! Ready for work today?", font_size="4xl", color="white", mb="2"),
                         rx.text("Choose a task you want to perform today:", color="gray.300", mb="4"),
                         #rx.button("Submit Found Item", on_click=lambda: redirect("/submit-found"), color_scheme="blue", width="100%"),
                         rx.button(
@@ -746,7 +746,7 @@ def SubmitFoundItemPage() -> rx.Component:
             # Navigation bar
             rx.hstack(
                 rx.hstack(
-                    rx.image(src="/BTUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
+                    rx.image(src="/BackToUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
                     rx.heading("Back2You", font_size="xl", color="white"),
                     spacing="2",
                     align="center",
@@ -856,21 +856,15 @@ def SubmitFoundItemPage() -> rx.Component:
 # ---------------------
 #  Page:MatchItemPage
 # ---------------------
-import reflex as rx
-
-import reflex as rx
-from reflex import redirect
-
 def MatchItemPage() -> rx.Component:
     return rx.box(
         rx.vstack(
-            # Navigation bar
+            # Navigation Bar
             rx.hstack(
                 rx.hstack(
-                    rx.image(src="/BTUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
+                    rx.image(src="/BackToUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
                     rx.heading("Back2You", font_size="xl", color="white"),
-                    spacing="2",
-                    align="center",
+                    spacing="2", align="center"
                 ),
                 rx.spacer(),
                 rx.hstack(
@@ -878,15 +872,12 @@ def MatchItemPage() -> rx.Component:
                     rx.text(State.email, color="white", font_size="md"),
                     rx.button("Dashboard", on_click=lambda: redirect("/worker-dashboard"), variant="ghost", color_scheme="gray"),
                     rx.button("Logout", on_click=lambda: [State.logout(), redirect("/")], variant="outline", color_scheme="gray"),
-                    spacing="3",
-                    align="center",
+                    spacing="3", align="center"
                 ),
-                padding_x="6",
-                padding_y="4",
-                width="100%",
+                padding_x="6", padding_y="4", width="100%",
             ),
 
-            # Table section
+            # Table Section
             rx.center(
                 rx.box(
                     rx.vstack(
@@ -895,39 +886,61 @@ def MatchItemPage() -> rx.Component:
                             rx.spacer(),
                             rx.button("Refresh", color_scheme=button_style_1, on_click=State.load_matches),
                         ),
-                        # Table headers
-                        rx.hstack(
-                            *[rx.text(h, font_weight="bold", width="8em", color="white") for h in [
-                                "Lost ID", "Lost Type", "Lost Desc",
-                                "Found ID", "Found Type", "Found Desc",
-                                "Match %", "Action"
-                            ]]
-                        ),
                         rx.divider(),
 
-                        # Table rows
+                        # Data Rows
                         rx.vstack(
                             rx.foreach(
                                 State.matches,
-                                lambda item: rx.hstack(
-                                    rx.text(item["lost_item_id"], width="8em", color="gray.100"),
-                                    rx.text(item["lost_item_type"], width="8em", color="gray.100"),
-                                    rx.text(item["lost_item_desc"], width="8em", color="gray.100"),
-                                    rx.text(item["found_item_id"], width="8em", color="gray.100"),
-                                    rx.text(item["found_item_type"], width="8em", color="gray.100"),
-                                    rx.text(item["found_item_desc"], width="8em", color="gray.100"),
-                                    rx.text(f"{item['match_score']}%", width="6em", color="green.200"),
-                                    rx.button("Confirm", color_scheme=button_style_2,
-                                        on_click=[State.call_confirm_match(
-                                            item["lost_item_id"],
-                                            item["found_item_id"],
-                                            item["found_item_category"]
-                                        )]),
-                                    spacing="2",
+                                lambda item: rx.box(
+                                    rx.vstack(
+                                        # LOST ITEM ROW
+                                        rx.hstack(
+                                            rx.text("Lost", font_weight="bold", width="5em", color="red.200"),
+                                            rx.text(item["lost_item_id"], width="6em", color="gray.100"),
+                                            rx.text(item["lost_item_type"], width="6em", color="gray.100"),
+                                            rx.text(item["lost_item_color"], width="6em", color="gray.100"),
+                                            rx.text(item["lost_item_desc"], width="6em", color="gray.100"),
+                                            rx.text(item["lost_item_size"], width="6em", color="gray.100"),
+                                            rx.text(item["lost_item_material"], width="6em", color="gray.100"),
+                                            rx.text(item["lost_item_brand"], width="6em", color="gray.100"),
+                                            rx.text(item["lost_item_name"], width="6em", color="gray.100"),
+                                        ),
+
+                                        # FOUND ITEM ROW
+                                        rx.hstack(
+                                            rx.text("Found", font_weight="bold", width="5em", color="green.200"),
+                                            rx.text(item["found_item_id"], width="6em", color="gray.100"),
+                                            rx.text(item["found_item_type"], width="6em", color="gray.100"),
+                                            rx.text(item["found_item_color"], width="6em", color="gray.100"),
+                                            rx.text(item["found_item_desc"], width="6em", color="gray.100"),
+                                            rx.text(item["found_item_size"], width="6em", color="gray.100"),
+                                            rx.text(item["found_item_material"], width="6em", color="gray.100"),
+                                            rx.text(item["found_item_brand"], width="6em", color="gray.100"),
+                                            rx.text(item["found_item_name"], width="6em", color="gray.100"),
+                                        ),
+
+                                        # Match & Confirm
+                                        rx.hstack(
+                                            rx.spacer(),
+                                            rx.text(f"Match: {item['match_score']}%", color="white", font_weight="bold"),
+                                            rx.button("Confirm", color_scheme=button_style_2,
+                                                on_click=[State.call_confirm_match(
+                                                    item["lost_item_id"],
+                                                    item["found_item_id"],
+                                                    item["found_item_category"]
+                                                )]
+                                            ),
+                                            spacing="4",
+                                            margin_top="0.5em"
+                                        ),
+                                        rx.divider(),
+                                    )
                                 )
                             )
                         ),
-                        spacing="4",
+
+                        spacing="4"
                     ),
                     style={
                         #"background": "rgba(255, 255, 255, 0.05)",
@@ -935,12 +948,12 @@ def MatchItemPage() -> rx.Component:
                         #"boxShadow": "0 8px 30px rgba(0, 0, 0, 0.4)",
                         "padding": "2rem",
                         "width": "100%",
-                        "maxWidth": "1000px",
-                        #"overflowX": "auto",
-                    },
+                        "maxWidth": "1200px",
+                    }
                 ),
                 padding_top="4"
             ),
+
             spacing="6",
             padding="2rem"
         ),
@@ -948,7 +961,6 @@ def MatchItemPage() -> rx.Component:
         width="100vw",
         style=bg_style,
     )
-
 
 # ---------------------
 #  Page:ConfirmRetrunPage
@@ -959,7 +971,7 @@ def ConfirmReturnPage() -> rx.Component:
             # Navigation bar
             rx.hstack(
                 rx.hstack(
-                    rx.image(src="/BTUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
+                    rx.image(src="/BackToUw.png", width="2.5em", style={"filter": "brightness(1.4) saturate(1.5)"}),
                     rx.heading("Back2You", font_size="xl", color="white"),
                     spacing="2",
                     align="center",
@@ -1038,8 +1050,8 @@ def ConfirmReturnPage() -> rx.Component:
 # ---------------------
 
 app = rx.App()
-app.add_page(index)
-app.add_page(LoginPage, route="/login")
+app.add_page(LoginPage, route="/")
+app.add_page(index, route="/admin")
 app.add_page(UserDashboard, route="/user-dashboard")
 app.add_page(SubmitLostItemPage, route="/submit-lost")
 app.add_page(ViewLostReportPage, route="/view-lost")
