@@ -24,8 +24,6 @@ services:
     container_name: ss-test-webapp
     environment:
       - DATABASE_URL=postgresql://root:root@db/test
-    volumes:
-      - ./webapp:/webapp
     depends_on:
       db:
         condition: service_healthy

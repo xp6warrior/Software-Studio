@@ -2,13 +2,16 @@
 
 if [[ "$1" = "start" ]]
 then
-    docker compose up
+    docker compose up -d
 elif [[ "$1" = "stop" ]]
 then
     docker compose down
-elif [[ "$1" = "restart" ]]
+elif [[ "$1" = "clear" ]]
 then
     docker compose down -v
+elif [[ "$1" = "rebuild" ]]
+then
+    docker compose build
 elif [[ "$1" = "test" ]]
 then
     if [[ "$2" = "unit" ]]
@@ -25,5 +28,15 @@ then
         echo "usage: ./ss-services test [unit|int]"
     fi
 else
-    echo "usage: ./ss-services [start|stop|restart|test]"
+    echo "usage: ./ss-services [start|stop|clear|rebuild|test|]"
+    echo "help: ./ss-services --help"
+
+    if [[ "$1" = "--help" ]]
+    then
+        echo "start - creates and starts all containers"
+        echo "stop - stops and removes all containers"
+        echo "clear - stops and removes all containers, clears database volume"
+        echo "rebuild - rebuilds images (use after editing code)"
+        echo "test - tests code"
+    fi
 fi
