@@ -1,6 +1,5 @@
 FROM python:3.11-slim
 COPY . /webapp
-COPY ../database /webapp/models
 WORKDIR /webapp
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
