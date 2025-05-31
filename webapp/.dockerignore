@@ -1,0 +1,10 @@
+assets/external/
+*.db
+.states
+
+pynecone.db
+__pycache__/
+.web
+*.py[cod]
+
+test.txt

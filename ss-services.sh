@@ -5,10 +5,10 @@ then
     shift
     if [[ "$#" -eq 0 ]]
     then
-        echo "Starting all containers"
+        echo "Starting all services"
         docker compose up
     else
-        echo "Starting containers $*"
+        echo "Starting services $*"
         docker compose up "$@"
     fi
 
@@ -17,10 +17,10 @@ then
     shift
     if [[ "$#" -eq 0 ]]
     then
-        echo "Stopping all containers"
+        echo "Stopping all services"
         docker compose down
     else
-        echo "Stopping containers $*"
+        echo "Stopping services $*"
         docker compose down "$@"
     fi
 
@@ -88,9 +88,9 @@ then
             --name ss-test-postgres \
             --network test-network \
             -p 5432:5432 \
-            -e POSTGRES_HOST_AUTH_METHOD=trust \
-            -e POSTGRES_USER=test \
-            --health-cmd="pg_isready -U test" \
+            -e POSTGRES_USER=root \
+            -e POSTGRES_PASSWORD=root \
+            --health-cmd="pg_isready -U root" \
             --health-interval=3s \
             --health-retries=5 \
             --rm \
@@ -101,10 +101,13 @@ then
             sleep 1
         done
 
+        cd database && \
+        alembic upgrade head && \
+
         docker run \
             --name ss-test-webapp \
             --network test-network \
-            -e DATABASE_URL=postgresql://test@ss-test-postgres/postgres \
+            -e DATABASE_URL=postgresql://root:root@ss-test-postgres/postgres \
             --rm \
             software-studio-webapp \
             python3 -m unittest discover -s test -p int_*.py

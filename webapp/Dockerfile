@@ -1,5 +1,5 @@
 FROM python:3.11-slim
-COPY . /webapp
+
 WORKDIR /webapp
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -7,8 +7,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v0.6.9"
+
+COPY webapp/requirements.txt requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+COPY webapp .
+COPY database/models ./webapp/models2
 
 CMD ["reflex", "run"]
