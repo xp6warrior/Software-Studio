@@ -2,11 +2,34 @@ from sqlalchemy import Column, Integer, String, DateTime, PrimaryKeyConstraint, 
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql import func
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.inspection import inspect
 
-from models.enums import *
+from .enums import *
 
 class Base(DeclarativeBase):
-    pass
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+
+        # Get all column keys
+        self_columns = inspect(self).mapper.column_attrs
+        for col in self_columns:
+            if getattr(self, col.key) != getattr(other, col.key):
+                return False
+        return True
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __hash__(self):
+        return hash(tuple(getattr(self, col.key) for col in inspect(self).mapper.column_attrs))
+    
+    def __repr__(self):
+        values = ', '.join(
+            f"{col.key}={getattr(self, col.key)!r}"
+            for col in inspect(self).mapper.column_attrs
+        )
+        return f"<{self.__class__.__name__}({values})>"
 
 class Accounts(Base):
     __tablename__ = "accounts"
