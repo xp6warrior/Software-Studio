@@ -24,15 +24,15 @@ then
         docker compose down "$@"
     fi
 
-elif [[ "$1" = "rebuild" ]]
+elif [[ "$1" = "build" ]]
 then
     shift
     if [[ "$#" -eq 0 ]]
     then
-        echo "Rebuilding all images"
+        echo "Building all images"
         docker compose build
     else
-        echo "Rebuilding images $*"
+        echo "Building images $*"
         docker compose build "$@"
     fi
 
@@ -46,7 +46,7 @@ then
     echo "Loading latest database migration script"
     docker compose up -d db
     until [ "$(docker inspect --format='{{.State.Health.Status}}' $(docker compose ps -q db))" = "healthy" ]; do
-        sleep 2
+        sleep 1
     done
 
     cd database && \
@@ -60,7 +60,7 @@ then
 
     docker compose up -d db
     until [ "$(docker inspect --format='{{.State.Health.Status}}' $(docker compose ps -q db))" = "healthy" ]; do
-        sleep 2
+        sleep 1
     done
 
     cd database && \
@@ -78,23 +78,52 @@ then
         cd webapp
         echo "Running webapp unit tests..."
         python3 -m unittest discover -s test -p unit_*.py
+
     elif [[ "$2" = "int" ]]
     then
         echo "Running webapp integration tests..."
-        docker compose -f docker-compose.test.yaml up --abort-on-container-exit --exit-code-from test-webapp
-        docker compose -f docker-compose.test.yaml down --volumes --remove-orphans
+
+        docker network create test-network
+        docker run -d \
+            --name ss-test-postgres \
+            --network test-network \
+            -p 5432:5432 \
+            -e POSTGRES_HOST_AUTH_METHOD=trust \
+            -e POSTGRES_USER=test \
+            --health-cmd="pg_isready -U test" \
+            --health-interval=3s \
+            --health-retries=5 \
+            --rm \
+            -d \
+            postgres:17
+
+        until [ "$(docker inspect --format='{{.State.Health.Status}}' ss-test-postgres)" = "healthy" ]; do
+            sleep 1
+        done
+
+        docker run \
+            --name ss-test-webapp \
+            --network test-network \
+            -e DATABASE_URL=postgresql://test@ss-test-postgres/postgres \
+            --rm \
+            software-studio-webapp \
+            python3 -m unittest discover -s test -p int_*.py
+
+        docker stop ss-test-postgres
+        docker network rm test-network
     else
         echo "usage: ./ss-services test [unit|int]"
     fi
+
 else
     echo "Use this script to perform various development tasks"
     echo "usage: ./ss-services [start|stop|rebuild|clear|migrate|test]"
     echo
-    echo "start <container_list> - creates and starts containers"
-    echo "stop <container_list> - stops and removes containers"
-    echo "rebuild <container_list> - rebuilds images (use after editing code)"
+    echo "start <service_list> - creates and starts services"
+    echo "stop <service_list> - stops and removes services"
+    echo "build <service_list> - builds images (use after editing code)"
     echo "clear - clears database volume, removes all containers"
     echo "load - loads latest database migration script"
     echo "migrate - creates database migration script"
-    echo "test [unit|int] - tests code"
+    echo "test [unit|int] - runs test code"
 fi
