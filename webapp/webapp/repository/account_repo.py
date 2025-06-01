@@ -7,11 +7,11 @@ from webapp.models2.models import Accounts
     CRUD account operations.
 """
 
-def select_account(email: str) -> Accounts | None:
+def select_account_by_email(email: str) -> Accounts | None:
     if email == None:
-        raise Exception("select_account parameter must not be None!")
+        raise Exception("select_account_by_email parameter must not be None!")
     elif type(email) != str:
-        raise Exception("select_account parameter must be of type str!")
+        raise Exception("select_account_by_email parameter must be of type str!")
     
     with rx.session() as session:
         account = session.exec(

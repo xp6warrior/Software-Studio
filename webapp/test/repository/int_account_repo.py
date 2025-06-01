@@ -21,29 +21,29 @@ class TestAccountRepo(unittest.TestCase):
             session.exec(delete(Accounts))
             session.commit()
 
-    # select_account
-    def test_select_account_success_none(self):
-        result = select_account("test@domain.com")
+    # select_account_by_email
+    def test_select_account_by_email_success_none(self):
+        result = select_account_by_email("test@domain.com")
         self.assertIsNone(result)
 
-    def test_select_account_success_one(self):
+    def test_select_account_by_email_success_one(self):
         with rx.session() as session:
             session.add(self.account1)
             session.commit()
             session.refresh(self.account1)
         
         expected_result = self.account1
-        result = select_account("test@domain.com")
+        result = select_account_by_email("test@domain.com")
         self.assertEqual(expected_result, result)
 
-    def test_select_account_fail_param(self):
+    def test_select_account_by_email_fail_param(self):
         with self.assertRaises(Exception) as context:
-            select_account(None)
-        self.assertEqual(str(context.exception), "select_account parameter must not be None!")
+            select_account_by_email(None)
+        self.assertEqual(str(context.exception), "select_account_by_email parameter must not be None!")
 
         with self.assertRaises(Exception) as context:
-            select_account(1234)
-        self.assertEqual(str(context.exception), "select_account parameter must be of type str!")
+            select_account_by_email(1234)
+        self.assertEqual(str(context.exception), "select_account_by_email parameter must be of type str!")
         
     # select_all_accounts
     def test_select_all_accounts_success_none(self):
@@ -61,8 +61,25 @@ class TestAccountRepo(unittest.TestCase):
         result = select_all_accounts()
         self.assertCountEqual(expected_result, result)
     
-    # insert_update_account
+    # insert/update account
     def test_insert_account_success(self):
+        insert_update_account(self.account1)
+
+        with rx.session() as session:
+            result = session.exec(
+                select(Accounts).where(Accounts.email == self.account1.email)
+            ).scalars().first()
+
+        expected_result = self.account1
+        self.assertEqual(expected_result, result)
+
+    def test_update_account_success(self):
+        with rx.session() as session:
+            session.add(self.account1)
+            session.commit()
+            session.refresh(self.account1)
+
+        self.account1.role = RoleEnum.ADMIN
         insert_update_account(self.account1)
 
         with rx.session() as session:
