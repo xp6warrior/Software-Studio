@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, PrimaryKeyConstraint, ForeignKeyConstraint, CheckConstraint
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.inspection import inspect
@@ -80,6 +80,11 @@ class Items(Base):
     description = Column(String(255))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     email = Column(String(254), nullable=False)
+
+    _lost_matches = relationship("Matches", back_populates="lost_item", foreign_keys="Matches.lost_item_id", 
+                                 lazy="write_only", passive_deletes=True)
+    _found_matches = relationship("Matches", back_populates="found_item", foreign_keys="Matches.found_item_id", 
+                                  lazy="write_only", passive_deletes=True)
 
 class PersonalItems(Items):
     __tablename__ = "personalitems"
@@ -220,6 +225,9 @@ class Matches(Base):
     status_changed = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     lost_item_id = Column(Integer, nullable=False)
     found_item_id = Column(Integer, nullable=False)
+
+    lost_item = relationship("Items", back_populates="_lost_matches", foreign_keys=[lost_item_id])
+    found_item = relationship("Items", back_populates="_found_matches", foreign_keys=[found_item_id])
 
 
 class ArchivedItems(Base):

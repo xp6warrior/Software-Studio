@@ -1,45 +1,105 @@
 import unittest
-from webapp.models.models import *
-from webapp.models.enums import MatchStatus
+import reflex as rx
+from sqlalchemy import select, delete
+
+from webapp.models2.models import Accounts, PersonalItems, Matches
+from webapp.models2.enums import RoleEnum, PersonalItemType, ColorEnum, StatusEnum, MatchStatusEnum
 from webapp.repository.matches_repo import *
 
 class TestMatchesRepo(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.match1 = Match(
-            table_name="personalitems",
-            lost_item_id=4,
-            found_item_id=7,
-            status=MatchStatus.UNCONFIRMED,
-            percentage=80
-        )
-        cls.match2 = Match(
-            table_name="personalitems",
-            lost_item_id=5,
-            found_item_id=7,
-            status=MatchStatus.CONFIRMED,
-            percentage=90
-        )
-        insert_update_match(cls.match1)
-        insert_update_match(cls.match2)
+    def setUp(self):
+        self.account = Accounts(email='test.com', name='name', surname='surname', role=RoleEnum.USER, password='pass')
+        self.item1 = PersonalItems(status=StatusEnum.LOST, email='test.com', type=PersonalItemType.PASSPORT, color=ColorEnum.RED)
+        self.item2 = PersonalItems(status=StatusEnum.FOUND, email='test.com', type=PersonalItemType.PASSPORT, color=ColorEnum.RED)
+    
+    def tearDown(self):
+        with rx.session() as session:
+            session.exec(delete(Accounts))
+            session.exec(delete(Items))
+            session.exec(delete(Matches))
+            session.commit()
 
-    def test_select_matches(self):
-        selected = select_matches(7, PersonalItems)
-        self.assertCountEqual(selected, [self.match1, self.match2])
+    # select_matches
+    def test_select_matches_success_none(self):
+        with rx.session() as session:
+            session.add_all([self.account, self.item1, self.item2])
+            session.commit()
+            session.refresh(self.item1)
+            session.refresh(self.item2)
+            
+        expected_result = []
+        result = select_matches(self.item1)
+        self.assertEqual(expected_result, result)
 
-        # Exceptions
+        expected_result = []
+        result = select_matches(self.item2)
+        self.assertEqual(expected_result, result)
+
+    def test_select_matches_success_many(self):
+        with rx.session() as session:
+            session.add_all([self.account, self.item1, self.item2])
+            session.commit()
+            matcha = Matches(status=MatchStatusEnum.UNCONFIRMED, percentage=100, 
+                                lost_item_id=self.item1.id, found_item_id=self.item2.id)
+            session.add(matcha)
+            session.commit()
+            session.refresh(self.item1)
+            session.refresh(self.item2)
+            session.refresh(matcha)
+
+        expected_result = [matcha]
+        result = select_matches(self.item1, 0, 1)
+        self.assertCountEqual(expected_result, result)
+
+        expected_result = [matcha]
+        result = select_matches(self.item2, 0, 1)
+        self.assertCountEqual(expected_result, result)
+
+    def test_select_matches_fail_param(self):
         with self.assertRaises(Exception) as context:
-            select_matches(None, PersonalItems)
-        self.assertEqual(str(context.exception), "select_matches found_id must not be None!")
-        
+            select_matches(None)
+        self.assertEqual(str(context.exception), "item must not be None!")
+
         with self.assertRaises(Exception) as context:
-            select_matches("None", PersonalItems)
-        self.assertEqual(str(context.exception), "select_matches found_id must be of type int!")
+            select_matches(1234)
+        self.assertEqual(str(context.exception), "item must be of type Items!")
 
-    def test_update_matches(self):
-        self.match2.status = MatchStatus.UNCONFIRMED
-        insert_update_match(self.match2)
+        with self.assertRaises(Exception) as context:
+            select_matches(self.item1, None, None)
+        self.assertEqual(str(context.exception), "offset and limit must not be None!")
 
-        selected = select_matches(7, PersonalItems)
-        self.assertCountEqual(selected, [self.match1, self.match2])
+        with self.assertRaises(Exception) as context:
+            select_matches(self.item1, "134")
+        self.assertEqual(str(context.exception), "offset and limit must be of type int!")
+
+        with self.assertRaises(Exception) as context:
+            select_matches(self.item1, 4, -2)
+        self.assertEqual(str(context.exception), "offset and limit must be at least 0, and in ascending order!")
+
+    # update match
+    def test_update_match(self):
+        with rx.session() as session:
+            session.add_all([self.account, self.item1, self.item2])
+            session.commit()
+            matcha = Matches(status=MatchStatusEnum.UNCONFIRMED, percentage=100, 
+                                lost_item_id=self.item1.id, found_item_id=self.item2.id)
+            session.add(matcha)
+            session.commit()
+            session.refresh(self.item1)
+            session.refresh(self.item2)
+            session.refresh(matcha)
+
+        matcha.percentage = 80
+        insert_update_match(matcha)
+
+        with rx.session() as session:
+            result = session.exec(
+                select(Matches).where(Matches.id == matcha.id)
+            ).scalars().all()
+
+        expected_result = [matcha]
+        self.assertCountEqual(expected_result, result)
+
+if __name__ == "__main__":
+    unittest.main()
