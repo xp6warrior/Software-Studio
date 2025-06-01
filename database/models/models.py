@@ -6,6 +6,25 @@ from sqlalchemy.inspection import inspect
 
 from .enums import *
 
+"""
+    !!! VERY IMPORTANT Sqlalchemy mechanisms !!!
+    When creating an instance of once of these classes, it is in a 'transient' state.
+    It is not in the database yet, you can freely assign and reference it's variables.
+    
+    Once you insert it into the DB via repo function (or had it returned from a select repo
+    function), it is in a 'detached' state. This is because it has left an sqlalchemy
+    session, which was within the function.
+    
+    You can still freely assign and reference it's variables. However, if you want
+    to insert or update it to the DB again via repo function, YOU MUST NOT modify
+    the corresponding row in the DB.
+
+    Sqlalchemy assumes that the corresponding row in the DB remains untouched while the
+    instance is detached. If you do not follow the conditions, in the case of insert,
+    the row will not be inserted. In the case of an update, sqlalchemy will fail because
+    it won't know which row to update. This will lead to errors.
+"""
+
 class Base(DeclarativeBase):
     def __eq__(self, other):
         if type(self) != type(other):

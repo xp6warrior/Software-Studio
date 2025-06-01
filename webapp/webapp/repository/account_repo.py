@@ -1,5 +1,7 @@
 import reflex as rx
-from webapp.models.models import Accounts
+from sqlalchemy import select
+
+from webapp.models2.models import Accounts
 
 """
     CRUD account operations.
@@ -13,24 +15,17 @@ def select_account(email: str) -> Accounts | None:
     
     with rx.session() as session:
         account = session.exec(
-            Accounts.select().where(
+            select(Accounts).where(
                 Accounts.email == email
             )
-        ).first()
-        session.commit()
+        ).scalars().first()
         if account == None:
             return None
-        session.refresh(account)
     return account
 
 def select_all_accounts() -> list[Accounts]:
     with rx.session() as session:
-        accounts = session.exec(
-            Accounts.select()
-        ).all()
-        session.commit()
-        for a in accounts:
-            session.refresh(a)
+        accounts = session.exec(select(Accounts)).scalars().all()
     return accounts
     
 def insert_update_account(account: Accounts):

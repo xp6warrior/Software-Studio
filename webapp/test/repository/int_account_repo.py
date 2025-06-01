@@ -1,73 +1,122 @@
 import unittest
-from webapp.models.enums import RoleEnum
-from webapp.models.models import Accounts 
+import reflex as rx
+from sqlalchemy import delete
+from datetime import datetime
+
+from webapp.models2.models import Accounts 
+from webapp.models2.enums import RoleEnum
 from webapp.repository.account_repo import *
 
 class TestAccountRepo(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.account1 = Accounts(
-            email="abc@123.com", password="password", role=RoleEnum.ADMIN,
-            pesel=12345, name="name", surname="surname"
-        )
-        cls.account2 = Accounts(
-            email="def@456.com", password="password", role=RoleEnum.WORKER,
-            pesel=67890, name="name2", surname="surname2"
-        )
+    def setUp(self):
+        self.current_time = datetime.now().astimezone()
+        self.account1 = Accounts(email="test@domain.com", password="pass", role=RoleEnum.USER,
+                        name="name", surname="surname", last_login=self.current_time)
+        self.account2 = Accounts(email="test2@domain.com", password="pass2", role=RoleEnum.WORKER,
+                        name="name2", surname="surname2", last_login=self.current_time)
+        self.account3 = Accounts(email="test@domain.com", password="pass3", role=RoleEnum.ADMIN,
+                        name="name3", surname="surname3", last_login=self.current_time)
 
-    def test_account_crud(self):
-        # Insert and select
-        insert_update_account(self.account1)
-        selected = select_account(self.account1.email)
-        self.assertEqual(selected, self.account1)
-        insert_update_account(self.account2)
-        selected = select_account(self.account2.email)
-        self.assertEqual(selected, self.account2)
+    def tearDown(self):
+        with rx.session() as session:
+            session.exec(delete(Accounts))
+            session.commit()
 
-        # Insert exceptions
-        with self.assertRaises(Exception) as context:
-            insert_update_account(None)
-        self.assertEqual(str(context.exception), "insert_update_account parameter must not be None!")
-        with self.assertRaises(Exception) as context:
-            insert_update_account(5)
-        self.assertEqual(str(context.exception), "insert_update_account parameter must be of type Accounts!")
+    # select_account
+    def test_select_account_success_none(self):
+        result = select_account("test@domain.com")
+        self.assertIsNone(result)
 
-        # Select exceptions
+    def test_select_account_success_one(self):
+        with rx.session() as session:
+            session.add(self.account1)
+            session.commit()
+            session.refresh(self.account1)
+        
+        expected_result = self.account1
+        result = select_account("test@domain.com")
+        self.assertEqual(expected_result, result)
+
+    def test_select_account_fail_param(self):
         with self.assertRaises(Exception) as context:
             select_account(None)
         self.assertEqual(str(context.exception), "select_account parameter must not be None!")
+
         with self.assertRaises(Exception) as context:
-            select_account(5)
+            select_account(1234)
         self.assertEqual(str(context.exception), "select_account parameter must be of type str!")
+        
+    # select_all_accounts
+    def test_select_all_accounts_success_none(self):
+        result = select_all_accounts()
+        self.assertEqual([], result)
 
-        selected = select_account("other@other.com")
-        self.assertEqual(selected, None)
+    def test_select_all_accounts_success_many(self):
+        with rx.session() as session:
+            session.add_all([self.account1, self.account2])
+            session.commit()
+            session.refresh(self.account1)
+            session.refresh(self.account2)
 
-        # Select all accounts
-        selected = select_all_accounts()
-        self.assertCountEqual(selected, [self.account1, self.account2])
+        expected_result = [self.account1, self.account2]
+        result = select_all_accounts()
+        self.assertCountEqual(expected_result, result)
+    
+    # insert_update_account
+    def test_insert_account_success(self):
+        insert_update_account(self.account1)
 
-        # Update and select
-        self.account2.role = RoleEnum.USER
-        insert_update_account(self.account2)
-        selected = select_account(self.account2.email)
-        self.assertEqual(selected, self.account2)
+        with rx.session() as session:
+            result = session.exec(
+                select(Accounts).where(Accounts.email == self.account1.email)
+            ).scalars().first()
 
-        # Delete and select
+        expected_result = self.account1
+        self.assertEqual(expected_result, result)
+
+    def test_insert_account_fail_exists(self):
+        insert_update_account(self.account1)
+        with self.assertRaises(Exception):
+            insert_update_account(self.account3)
+
+    def test_insert_account_fail_param(self):
+        with self.assertRaises(Exception) as context:
+            insert_update_account(None)
+        self.assertEqual(str(context.exception), "insert_update_account parameter must not be None!")
+
+        with self.assertRaises(Exception) as context:
+            insert_update_account(1234)
+        self.assertEqual(str(context.exception), "insert_update_account parameter must be of type Accounts!")
+
+    # delete_account
+    def test_delete_account_success(self):
+        with rx.session() as session:
+            session.add(self.account1)
+            session.commit()
+            session.refresh(self.account1)
+
         delete_account(self.account1)
-        delete_account(self.account2)
-        selected = select_all_accounts()
-        self.assertEqual(selected, [])
 
-        # Delete exceptions
+        with rx.session() as session:
+            result = session.exec(
+                select(Accounts).where(Accounts.email == self.account1.email)
+            ).scalars().first()
+
+        self.assertIsNone(result)
+
+    def test_delete_account_fail_param(self):
         with self.assertRaises(Exception) as context:
             delete_account(None)
         self.assertEqual(str(context.exception), "delete_account parameter must not be None!")
+
         with self.assertRaises(Exception) as context:
-            delete_account(5)
+            delete_account(1234)
         self.assertEqual(str(context.exception), "delete_account parameter must be of type Accounts!")
 
+    def test_delete_account_fail_no_exists(self):
+        with self.assertRaises(Exception):
+            delete_account(self.account1)
 
 if __name__ == "__main__":
     unittest.main()
