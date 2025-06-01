@@ -1,7 +1,6 @@
 import unittest
 import reflex as rx
 from sqlalchemy import delete
-from datetime import datetime
 
 from webapp.models2.models import Accounts 
 from webapp.models2.enums import RoleEnum
@@ -10,13 +9,12 @@ from webapp.repository.account_repo import *
 class TestAccountRepo(unittest.TestCase):
 
     def setUp(self):
-        self.current_time = datetime.now().astimezone()
         self.account1 = Accounts(email="test@domain.com", password="pass", role=RoleEnum.USER,
-                        name="name", surname="surname", last_login=self.current_time)
+                        name="name", surname="surname")
         self.account2 = Accounts(email="test2@domain.com", password="pass2", role=RoleEnum.WORKER,
-                        name="name2", surname="surname2", last_login=self.current_time)
+                        name="name2", surname="surname2")
         self.account3 = Accounts(email="test@domain.com", password="pass3", role=RoleEnum.ADMIN,
-                        name="name3", surname="surname3", last_login=self.current_time)
+                        name="name3", surname="surname3")
 
     def tearDown(self):
         with rx.session() as session:

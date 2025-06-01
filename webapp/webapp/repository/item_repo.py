@@ -1,75 +1,61 @@
 import reflex as rx
-import inspect
-import webapp.models.models as models
-from datetime import datetime, timezone
+from sqlalchemy import select
 
-models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass)
-               if cls != models.Accounts and cls != models.Match]
+from webapp.models2.models import Items
 
 """
     CRUD model operations.
 """
 
-def select_items(email: str) -> list[rx.Model]:
+def select_items_by_email(email: str) -> list[Items]:
     if email == None:
-        raise Exception("select_items parameter must not be None!")
+        raise Exception("select_items_by_email parameter must not be None!")
     elif type(email) != str:
-        raise Exception("select_items parameter must be of type str!")
+        raise Exception("select_items_by_email parameter must be of type str!")
     
-    items_list = []
     with rx.session() as session:
-        for model_cls in models_list:
-            models = session.exec(
-                model_cls.select().where(
-                    model_cls.email == email
-                )
-            ).all()
-            if models == []: continue
-            for m in models:
-                items_list.append(m)
-
-        session.commit()
-        for i in items_list:
+        items = session.exec(
+            select(Items).where(Items.email == email)
+        ).scalars().all()
+        for i in items:
             session.refresh(i)
-        
-    return items_list
+    return items
 
-def select_item_by_id(id: int, model_cls: object) -> rx.Model | None:
-    if id == None:
-        raise Exception("select_item_by_id id must not be None!")
-    elif type(id) != int:
-        raise Exception("select_item_by_id id must be of type int!")
+# def select_item_by_id(id: int, model_cls: object) -> rx.Model | None:
+#     if id == None:
+#         raise Exception("select_item_by_id id must not be None!")
+#     elif type(id) != int:
+#         raise Exception("select_item_by_id id must be of type int!")
     
-    with rx.session() as session:
-        model = session.exec(
-            model_cls.select().where(
-                model_cls.id == id
-            )
-        ).first()
-        if model != None:
-            session.commit()
-            session.refresh(model)
-    return model
+#     with rx.session() as session:
+#         model = session.exec(
+#             model_cls.select().where(
+#                 model_cls.id == id
+#             )
+#         ).first()
+#         if model != None:
+#             session.commit()
+#             session.refresh(model)
+#     return model
 
-def insert_update_item(model: object):
-    if model == None:
+def insert_update_item(item: Items):
+    if item == None:
         raise Exception("insert_update_item parameter must not be None!")
-    elif not isinstance(model, rx.Model):
-        raise Exception("insert_update_item parameter must be of type Model!")
-    
-    model.time_stamp = datetime.now(timezone.utc)
+    elif not isinstance(item, Items):
+        raise Exception("insert_update_item parameter must be of type Items!")
 
     with rx.session() as session:
-        session.add(model)
+        session.add(item)
         session.commit()
-        session.refresh(model)
+        session.refresh(item)
 
-def delete_item(model: object):
-    if model == None:
+def delete_item(item_id: int):
+    if item_id == None:
         raise Exception("delete_item parameter must not be None!")
-    elif not isinstance(model, rx.Model):
-        raise Exception("delete_item parameter must be of type Model!")
+    elif not isinstance(item_id, int):
+        raise Exception("delete_item parameter must be of type int!")
     
     with rx.session() as session:
-        session.delete(model)
+        item = session.exec(select(Items).where(Items.id == item_id)).scalars().first()
+        session.delete(item)
         session.commit()
