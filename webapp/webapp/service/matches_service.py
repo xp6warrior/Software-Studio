@@ -1,6 +1,6 @@
 from webapp.repository.matches_repo import *
 from webapp.repository.item_repo import *
-from webapp.repository.account_repo import select_account
+from webapp.repository.account_repo import select_account_by_email
 from webapp.items import *
 from webapp.models.models import *
 

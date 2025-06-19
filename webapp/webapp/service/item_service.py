@@ -5,7 +5,7 @@ from webapp.models.archive_models import *
 from webapp.models.enums import MatchStatus
 from webapp.repository.item_repo import *
 from webapp.repository.matches_repo import select_matches
-from webapp.repository.account_repo import select_account
+from webapp.repository.account_repo import select_account_by_email
 from webapp.items import *
 
 models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass)

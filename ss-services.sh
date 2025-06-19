@@ -77,7 +77,12 @@ then
     then
         cd webapp
         echo "Running webapp unit tests..."
-        python3 -m unittest discover -s test -p unit_*.py
+
+        docker run \
+            --name ss-test-webapp \
+            --rm \
+            software-studio-webapp \
+            python3 -m unittest discover -s test -p unit_*.py
 
     elif [[ "$2" = "int" ]]
     then

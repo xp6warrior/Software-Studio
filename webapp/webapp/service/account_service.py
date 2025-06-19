@@ -1,15 +1,15 @@
 from webapp.repository.account_repo import *
-from webapp.repository.account_repo import delete_account as remove_acc
-from webapp.models.enums import RoleEnum
+from webapp.repository.account_repo import delete_account as delete_account_from_repo
+from webapp.models2.enums import RoleEnum
 
 import secrets
 import string
 from email_validator import validate_email, EmailNotValidError
 from sqlalchemy.exc import IntegrityError
 
-def create_account(email: str, password: str, role: RoleEnum, pesel: int, name: str, surname: str) -> str:
-    if type(email) != str or type(role) != RoleEnum or type(pesel) != int or type(name) != str or type(surname) != str:
-        return "Error: Parameters have incorrect data types!"
+def create_account(email: str, password: str, role: RoleEnum, name: str, surname: str) -> str:
+    if type(email) != str or type(role) != RoleEnum or type(name) != str or type(surname) != str:
+        return "Error: Account parameters have incorrect data types!"
     
     # Validate email format
     try:
@@ -22,25 +22,25 @@ def create_account(email: str, password: str, role: RoleEnum, pesel: int, name: 
         chars = string.ascii_letters + string.digits + string.punctuation
         password = ''.join(secrets.choice(chars) for _ in range(14))
     elif type(password) != str:
-        return "Error: Parameters have incorrect data types!"
+        return "Error: Account parameters have incorrect data types!"
     
     # Insert the account
     try:
         insert_update_account(Accounts(
-            email=email, password=password, role=role, pesel=pesel, name=name, surname=surname
+            email=email, password=password, role=role, name=name, surname=surname
         ))
     except IntegrityError:
-        return "Error: Email or pesel already used"
+        return "Error: Email address already in use"
 
-def login_user(email: str, password: str) -> RoleEnum:
-    account = select_account(email)
+def login(email: str, password: str) -> str:
+    account = select_account_by_email(email)
     if account == None or account.password != password:
         return False
     else:
         return account.role
     
-def get_account_details(email: str) -> dict[str, any]:
-    account = select_account(email)
+def get_user_account_details(email: str) -> dict[str, any]:
+    account = select_account_by_email(email)
     if account == None:
         return False
     else:
@@ -48,7 +48,6 @@ def get_account_details(email: str) -> dict[str, any]:
             "name": account.name,
             "surname": account.surname,
             "email": account.email,
-            "pesel": account.pesel,
             "role": account.role
         }
     
@@ -60,15 +59,14 @@ def get_accounts() -> list[dict[str, any]]:
             "name": acc.name,
             "surname": acc.surname,
             "email": acc.email,
-            "pesel": acc.pesel,
             "role": acc.role
         })
     return accounts_list
 
 def delete_account(email: str) -> bool:
-    account = select_account(email)
+    account = select_account_by_email(email)
     if account == None:
         return False
     else:
-        remove_acc(account)
+        delete_account_from_repo(account)
         return True
