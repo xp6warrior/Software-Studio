@@ -1,13 +1,11 @@
 services:
   db:
     image: postgres:17
-    container_name: ss-postgres
+    container_name: ss-postgres-test
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
       POSTGRES_DB: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
@@ -21,12 +19,10 @@ services:
     build:
       context: .
       dockerfile: webapp/Dockerfile
-    container_name: ss-webapp
+    container_name: ss-webapp-test
     environment:
       - DATABASE_URL=postgresql://root:root@db/postgres
       - IMAGE_STORE_PATH=/var/lib/back2u
-    volumes:
-      - image_data:/var/lib/back2u
     depends_on:
       db:
         condition: service_healthy
@@ -35,21 +31,18 @@ services:
       - "8000:8000"
     networks:
       - ss-network
+    command: ["python3", "-m", "unittest", "discover", "-s", "test", "-p", "unit_*.py"]
 
-  rte:
-    build:
-      context: ./rte
-      dockerfile: Dockerfile
-    container_name: ss-rte
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - ss-network
-
-volumes:
-  postgres_data:
-  image_data:
+  # rte:
+  #   build:
+  #     context: ./rte
+  #     dockerfile: Dockerfile
+  #   container_name: ss-rte-test
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   networks:
+  #     - ss-network
 
 networks:
   ss-network:

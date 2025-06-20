@@ -78,6 +78,7 @@ class Items(Base):
     category = Column(postgresql.ENUM(CategoryEnum), nullable=False)
     status = Column(postgresql.ENUM(StatusEnum), nullable=False)
     description = Column(String(255))
+    image_name = Column(String(16))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     email = Column(String(254), nullable=False)
 

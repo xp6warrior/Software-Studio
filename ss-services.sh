@@ -75,11 +75,9 @@ elif [[ "$1" = "test" ]]
 then
     if [[ "$2" = "unit" ]]
     then
-        cd webapp
         echo "Running webapp unit tests..."
-
         docker run \
-            --name ss-test-webapp \
+            --name ss-webapp-test \
             --rm \
             software-studio-webapp \
             python3 -m unittest discover -s test -p unit_*.py
@@ -87,38 +85,16 @@ then
     elif [[ "$2" = "int" ]]
     then
         echo "Running webapp integration tests..."
-
-        docker network create test-network
-        docker run -d \
-            --name ss-test-postgres \
-            --network test-network \
-            -p 5432:5432 \
-            -e POSTGRES_USER=root \
-            -e POSTGRES_PASSWORD=root \
-            --health-cmd="pg_isready -U root" \
-            --health-interval=3s \
-            --health-retries=5 \
-            --rm \
-            -d \
-            postgres:17
-
-        until [ "$(docker inspect --format='{{.State.Health.Status}}' ss-test-postgres)" = "healthy" ]; do
+        docker compose -f docker-compose-test.yaml up db -d
+        
+        until [ "$(docker inspect --format='{{.State.Health.Status}}' ss-postgres-test)" = "healthy" ]; do
             sleep 1
         done
 
-        cd database && \
-        alembic upgrade head && \
+        cd database && alembic upgrade head && cd .. && \
+        docker compose -f docker-compose-test.yaml up --abort-on-container-exit
+        docker compose -f docker-compose-test.yaml down
 
-        docker run \
-            --name ss-test-webapp \
-            --network test-network \
-            -e DATABASE_URL=postgresql://root:root@ss-test-postgres/postgres \
-            --rm \
-            software-studio-webapp \
-            python3 -m unittest discover -s test -p int_*.py
-
-        docker stop ss-test-postgres
-        docker network rm test-network
     else
         echo "usage: ./ss-services test [unit|int]"
     fi
