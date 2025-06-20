@@ -1,10 +1,15 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 WORKDIR /webapp
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     unzip \
+    gcc \
+    build-essential \
+    libjpeg-dev \
+    libfreetype6-dev \
+    zlib1g-dev \
     nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v0.6.9"

@@ -85,6 +85,19 @@ class Items(Base):
                                  lazy="write_only", passive_deletes=True)
     _found_matches = relationship("Matches", back_populates="found_item", foreign_keys="Matches.found_item_id", 
                                   lazy="write_only", passive_deletes=True)
+    
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "category": self.category,
+            "status": self.status,
+            "description": self.description,
+            "created_at": str(self.created_at),
+            "email": self.email
+        }
+    
+    def __str__(self):
+        return f"Category: {self.category.value}, Description: {self.description}, Date submitted: {self.created_at}, "
 
 class PersonalItems(Items):
     __tablename__ = "personalitems"
@@ -98,6 +111,21 @@ class PersonalItems(Items):
     item_id = Column(Integer, nullable=False)
     type = Column(postgresql.ENUM(PersonalItemType), nullable=False)
     color = Column(postgresql.ENUM(ColorEnum), nullable=False)
+
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "item_type": self.type,
+            "attributes": {
+                "color": self.color
+            }
+        })
+        return base_dict
+    
+    def __str__(self):
+        base_str = super().__str__()
+        base_str += f"Type: {self.type.value}, Color: {self.color.value}"
+        return base_str
 
 class Jewelry(Items):
     __tablename__ = "jewelry"
@@ -113,6 +141,22 @@ class Jewelry(Items):
     color = Column(postgresql.ENUM(ColorEnum), nullable=False)
     size = Column(postgresql.ENUM(SizeEnum), nullable=False)
 
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "item_type": self.type,
+            "attributes": {
+                "color": self.color,
+                "size": self.size
+            }
+        })
+        return base_dict
+    
+    def __str__(self):
+        base_str = super().__str__()
+        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}"
+        return base_str
+
 class Accessories(Items):
     __tablename__ = "accessories"
     __table_args__ = (
@@ -127,6 +171,23 @@ class Accessories(Items):
     color = Column(postgresql.ENUM(ColorEnum), nullable=False)
     material = Column(postgresql.ENUM(MaterialEnum), nullable=False)
     brand = Column(String(20), nullable=False)
+
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "item_type": self.type,
+            "attributes": {
+                "color": self.color,
+                "material": self.material,
+                "brand": self.brand
+            }
+        })
+        return base_dict
+    
+    def __str__(self):
+        base_str = super().__str__()
+        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Material: {self.material.value}, Brand: {self.brand}"
+        return base_str
 
 class TravelItems(Items):
     __tablename__ = "travelitems"
@@ -144,6 +205,24 @@ class TravelItems(Items):
     material = Column(postgresql.ENUM(MaterialEnum), nullable=False)
     brand = Column(String(20), nullable=False)
 
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "item_type": self.type,
+            "attributes": {
+                "color": self.color,
+                "size": self.size,
+                "material": self.material,
+                "brand": self.brand
+            }
+        })
+        return base_dict
+    
+    def __str__(self):
+        base_str = super().__str__()
+        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}, Material: {self.material.value}, Brand: {self.brand}"
+        return base_str
+
 class ElectronicDevices(Items):
     __tablename__ = "electronicdevices"
     __table_args__ = (
@@ -158,6 +237,23 @@ class ElectronicDevices(Items):
     color = Column(postgresql.ENUM(ColorEnum), nullable=False)
     material = Column(postgresql.ENUM(MaterialEnum), nullable=False)
     brand = Column(String(20), nullable=False)
+
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "item_type": self.type,
+            "attributes": {
+                "color": self.color,
+                "material": self.material,
+                "brand": self.brand
+            }
+        })
+        return base_dict
+    
+    def __str__(self):
+        base_str = super().__str__()
+        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Material: {self.material.value}, Brand: {self.brand}"
+        return base_str
 
 class Clothing(Items):
     __tablename__ = "clothing"
@@ -175,6 +271,24 @@ class Clothing(Items):
     material = Column(postgresql.ENUM(MaterialEnum), nullable=False)
     brand = Column(String(20), nullable=False)
 
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "item_type": self.type,
+            "attributes": {
+                "color": self.color,
+                "size": self.size,
+                "material": self.material,
+                "brand": self.brand
+            }
+        })
+        return base_dict
+    
+    def __str__(self):
+        base_str = super().__str__()
+        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}, Material: {self.material.value}, Brand: {self.brand}"
+        return base_str
+
 class OfficeItems(Items):
     __tablename__ = "officeitems"
     __table_args__ = (
@@ -190,6 +304,24 @@ class OfficeItems(Items):
     size = Column(postgresql.ENUM(SizeEnum), nullable=False)
     material = Column(postgresql.ENUM(MaterialEnum), nullable=False)
     name = Column(String(20), nullable=False)
+
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "item_type": self.type,
+            "attributes": {
+                "color": self.color,
+                "size": self.size,
+                "material": self.material,
+                "name": self.name
+            }
+        })
+        return base_dict
+    
+    def __str__(self):
+        base_str = super().__str__()
+        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}, Material: {self.material.value}, Name: {self.name}"
+        return base_str
 
 class OtherItems(Items):
     __tablename__ = "otheritems"
@@ -207,6 +339,25 @@ class OtherItems(Items):
     material = Column(postgresql.ENUM(MaterialEnum), nullable=False)
     brand = Column(String(20), nullable=False)
     name = Column(String(20), nullable=False)
+
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "item_type": self.type,
+            "attributes": {
+                "color": self.color,
+                "size": self.size,
+                "material": self.material,
+                "brand": self.brand,
+                "name": self.name
+            }
+        })
+        return base_dict
+    
+    def __str__(self):
+        base_str = super().__str__()
+        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}, Material: {self.material.value}, Brand: {self.brand}, Name: {self.name}"
+        return base_str
 
 
 class Matches(Base):
@@ -226,8 +377,10 @@ class Matches(Base):
     lost_item_id = Column(Integer, nullable=False)
     found_item_id = Column(Integer, nullable=False)
 
-    lost_item = relationship("Items", back_populates="_lost_matches", foreign_keys=[lost_item_id])
-    found_item = relationship("Items", back_populates="_found_matches", foreign_keys=[found_item_id])
+    lost_item = relationship("Items", back_populates="_lost_matches", foreign_keys=[lost_item_id],
+                             lazy="joined")
+    found_item = relationship("Items", back_populates="_found_matches", foreign_keys=[found_item_id],
+                              lazy="joined")
 
 
 class ArchivedItems(Base):

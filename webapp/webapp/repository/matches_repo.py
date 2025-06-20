@@ -1,9 +1,10 @@
 import reflex as rx
+from sqlalchemy import select
 
 from webapp.models2.models import Matches, Items
 from webapp.models2.enums import StatusEnum
 
-def select_matches(item: Items) -> list[Matches]:
+def select_matches_by_item(item: Items) -> list[Matches]:
     if item == None:
         raise Exception("item must not be None!")
     elif not isinstance(item, Items):
@@ -19,6 +20,18 @@ def select_matches(item: Items) -> list[Matches]:
                 item._found_matches.select()
             ).all()
     return matches
+
+def select_match_by_id(match_id: int) -> Matches:
+    if match_id == None:
+        raise Exception("match_id must not be None!")
+    elif not isinstance(match_id, int):
+        raise Exception("match_id must be of type int!")
+    
+    with rx.session() as session:
+        match = session.exec(
+            select(Matches).where(Matches.id == match_id)
+        ).scalars().first()
+    return match
 
 def insert_update_match(match: Matches):
     if match == None:

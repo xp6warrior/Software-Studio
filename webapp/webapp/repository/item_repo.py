@@ -1,7 +1,8 @@
 import reflex as rx
 from sqlalchemy import select
 
-from webapp.models2.models import Items
+from webapp.models2.models import Items, Matches, ArchivedItems
+from webapp.models2.enums import StatusEnum
 
 """
     CRUD model operations.
@@ -41,8 +42,8 @@ def select_items_by_email(email: str) -> list[Items]:
 def insert_update_item(item: Items):
     if item == None:
         raise Exception("insert_update_item parameter must not be None!")
-    elif not isinstance(item, Items):
-        raise Exception("insert_update_item parameter must be of type Items!")
+    elif not isinstance(item, Items) and not isinstance(item, ArchivedItems):
+        raise Exception("insert_update_item parameter must be of type Items or ArchivedItems!")
 
     with rx.session() as session:
         session.add(item)

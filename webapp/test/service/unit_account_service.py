@@ -68,10 +68,10 @@ class TestCreateAccount(unittest.TestCase):
 
         mock_select_account_by_email.assert_called_once_with(self.account.email)
         self.assertEqual(result, {
-            "name": self.account.name,
-            "surname": self.account.surname,
-            "email": self.account.email,
-            "role": self.account.role
+            "name": "name",
+            "surname": "surname",
+            "email": "test@domain.com",
+            "role": "user"
         })
 
     @patch("webapp.service.account_service.select_account_by_email")
@@ -89,10 +89,10 @@ class TestCreateAccount(unittest.TestCase):
 
         mock_select_all_accounts.assert_called_once()
         self.assertEqual(result, [{
-            "name": self.account.name,
-            "surname": self.account.surname,
-            "email": self.account.email,
-            "role": self.account.role
+            "name": "name",
+            "surname": "surname",
+            "email": "test@domain.com",
+            "role": "user"
         }])
 
     @patch("webapp.service.account_service.select_account_by_email")

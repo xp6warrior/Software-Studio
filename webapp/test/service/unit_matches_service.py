@@ -1,103 +1,169 @@
 import unittest
 from unittest.mock import patch
 from webapp.service.matches_service import *
-from webapp.models.models import *
-from webapp.models.enums import *
-from webapp.items import *
+from webapp.models2.models import PersonalItems, Matches, ArchivedItems
+from webapp.models2.enums import CategoryEnum, StatusEnum, PersonalItemType, ColorEnum, MatchStatusEnum
 
 class TestMatchesService(unittest.TestCase):
 
-    @patch("webapp.service.matches_service.select_item_by_id")
-    @patch("webapp.service.matches_service.select_matches")
-    @patch("webapp.service.matches_service.select_items")
-    def test_get_matches(self, mock_select_items, mock_select_matches, mock_select_item_by_id):
-        lost_jewelry = Jewelry(
-            id=1, type=JewelryType.NECKLACE, color=ColorEnum.RED, size=SizeEnum.XS,
-            description="My necklace", status=StatusEnum.LOST, email="lost@user.com"
+    def setUp(self):
+        self.found_item = PersonalItems(
+            id=1, category=CategoryEnum.PERSONAL_ITEMS, status=StatusEnum.FOUND,
+            description="Personal Item", email="found@domain.com", type=PersonalItemType.PASSPORT, color=ColorEnum.RED
         )
-        found_jewelry = Jewelry(
-            id=2, type=JewelryType.NECKLACE, color=ColorEnum.RED, size=SizeEnum.XS,
-            status=StatusEnum.FOUND, email="found@worker.com"
+        self.lost_item = PersonalItems(
+            id=2, category=CategoryEnum.PERSONAL_ITEMS, status=StatusEnum.LOST,
+            description="Personal Item", email="owner@domain.com", type=PersonalItemType.PASSPORT, color=ColorEnum.RED
         )
-        match1 = Match(
-            id=1, table_name="jewelry", found_item_id=2, lost_item_id=1, status=MatchStatus.UNCONFIRMED
+        self.unconfirmed_match = Matches(
+            id=1, status=MatchStatusEnum.UNCONFIRMED, percentage=100, lost_item_id=2, found_item_id=1,
+            lost_item=self.lost_item, found_item=self.found_item
         )
-        match2 = Match(
-            id=2, table_name="jewelry", found_item_id=2, lost_item_id=3, status=MatchStatus.CONFIRMED
+        self.confirmed_match = Matches(
+            id=2, status=MatchStatusEnum.CONFIRMED, percentage=100, lost_item_id=2, found_item_id=1,
+            lost_item=self.lost_item, found_item=self.found_item
         )
-        lost_item = Lost_Item(
-            "jewelry", "necklace", "red", "My necklace", "xs", None, None, None, "lost", "1"
+        self.archive_item = ArchivedItems(
+            owner_email="owner@domain.com", owner_name="name", owner_surname="surname",
+            owner_pesel="12345678910", item_summary="Category: personal_items, Description: Personal Item, Date submitted: None, Type: passport, Color: red"
         )
-        found_item = Found_Item(
-            "jewelry", "necklace", "red", None, "xs", None, None, None, "2"
-        )
+        self.owner_details = {
+            "name": "name",
+            "surname": "surname",
+            "email": "owner@domain.com",
+            "role": "user"
+        }
 
-        mock_select_items.return_value = [found_jewelry]
-        mock_select_matches.return_value = [match1, match2]
-        mock_select_item_by_id.return_value = lost_jewelry
+    @patch("webapp.service.matches_service.select_matches_by_item")
+    @patch("webapp.service.matches_service.select_items_by_email")
+    def test_get_unconfirmed_matches_success(self, mock_select_items_by_email, mock_select_matches_by_item):
+        mock_select_items_by_email.return_value = [self.found_item]
+        mock_select_matches_by_item.return_value = [self.unconfirmed_match]
 
-        matches = get_matches("found@worker.com")
-        mock_select_items.assert_called_once_with("found@worker.com")
-        mock_select_matches.assert_called_once_with(2, Jewelry)
-        mock_select_item_by_id.assert_called_once_with(1, Jewelry)
-        self.assertEqual(matches, [[lost_item, found_item, "Schema doesn't store percentage yet :P"]])
+        result = get_unconfirmed_matches(self.found_item.email)
+        mock_select_items_by_email.assert_called_once_with(self.found_item.email)
+        mock_select_matches_by_item.assert_called_once_with(self.found_item)
+        self.assertEqual(result, [{
+            "match_id": "1",
+            "lost": {
+                "id": "2",
+                "category": "personal_items",
+                "status": "lost",
+                "description": "Personal Item",
+                "created_at": "None",
+                "email": "owner@domain.com",
+                "item_type": "passport",
+                "attributes": {
+                    "color": "red"
+                }
+            },
+            "found": {
+                "id": "1",
+                "category": "personal_items",
+                "status": "found",
+                "description": "Personal Item",
+                "created_at": "None",
+                "email": "found@domain.com",
+                "item_type": "passport",
+                "attributes": {
+                    "color": "red"
+                }
+            },
+            "percentage": "100"
+        }])
 
-        mock_select_items.return_value = []
-        matches = get_matches("other@worker.com")
-        self.assertEqual(matches, [])
+    @patch("webapp.service.matches_service.select_items_by_email")
+    def test_get_unconfirmed_matches_fail_email(self, mock_select_items_by_email):
+        mock_select_items_by_email.return_value = []
+
+        result = get_unconfirmed_matches(self.found_item.email)
+        mock_select_items_by_email.assert_called_once_with(self.found_item.email)
+        self.assertFalse(result)
+
+    @patch("webapp.service.matches_service.get_user_account_details")
+    @patch("webapp.service.matches_service.select_matches_by_item")
+    @patch("webapp.service.matches_service.select_items_by_email")
+    def test_get_confirmed_matches_with_owner_info_success(self, mock_select_items_by_email, mock_select_matches_by_item, mock_get_user_account_details):
+        mock_select_items_by_email.return_value = [self.found_item]
+        mock_select_matches_by_item.return_value = [self.confirmed_match]
+        mock_get_user_account_details.return_value = self.owner_details
+
+        result = get_confirmed_matches_with_owner_info(self.found_item.email)
+        mock_select_items_by_email.assert_called_once_with(self.found_item.email)
+        mock_select_matches_by_item.assert_called_once_with(self.found_item)
+        mock_get_user_account_details.assert_called_once_with(self.lost_item.email)
+        self.assertEqual(result, [{
+            "match_id": "2",
+            "found": {
+                "id": "1",
+                "category": "personal_items",
+                "status": "found",
+                "description": "Personal Item",
+                "created_at": "None",
+                "email": "found@domain.com",
+                "item_type": "passport",
+                "attributes": {
+                    "color": "red"
+                }
+            },
+            "owner": self.owner_details
+        }])
+
+    @patch("webapp.service.matches_service.select_items_by_email")
+    def test_get_confirmed_matches_with_owner_info_fail_email(self, mock_select_items_by_email):
+        mock_select_items_by_email.return_value = []
+
+        result = get_confirmed_matches_with_owner_info(self.found_item.email)
+        mock_select_items_by_email.assert_called_once_with(self.found_item.email)
+        self.assertFalse(result)
 
     @patch("webapp.service.matches_service.insert_update_match")
-    @patch("webapp.service.matches_service.select_matches")
-    def test_confirm_match(self, mock_select_matches, mock_insert_update_match):
-        match1 = Match(
-            id=1, table_name="jewelry", found_item_id=2, lost_item_id=1, status=MatchStatus.UNCONFIRMED
-        )
-        match2 = Match(
-            id=2, table_name="jewelry", found_item_id=2, lost_item_id=3, status=MatchStatus.CONFIRMED
-        )
-        mock_select_matches.return_value = [match1, match2]
+    @patch("webapp.service.matches_service.select_match_by_id")
+    def test_confirm_match(self, mock_select_match_by_id, mock_insert_update_match):
+        mock_select_match_by_id.return_value = self.unconfirmed_match
 
-        confirm_match(1, 2, Jewelry)
-        mock_select_matches.assert_called_once_with(2, Jewelry)
-        mock_insert_update_match.assert_called_once_with(match1)
+        result = confirm_match(str(self.unconfirmed_match.id))
 
-    @patch("webapp.service.matches_service.select_account")
-    @patch("webapp.service.matches_service.select_item_by_id")
-    @patch("webapp.service.matches_service.select_matches")
-    @patch("webapp.service.matches_service.select_items")
-    def test_get_confirmed_matches_with_user_pesel(self, mock_select_items, mock_select_matches,
-                                                   mock_select_item_by_id, mock_select_account):
-        lost_jewelry = Jewelry(
-            id=3, type=JewelryType.NECKLACE, color=ColorEnum.RED, size=SizeEnum.XS,
-            description="My necklace", status=StatusEnum.LOST, email="lost@user.com"
-        )
-        found_jewelry = Jewelry(
-            id=2, type=JewelryType.NECKLACE, color=ColorEnum.RED, size=SizeEnum.XS,
-            status=StatusEnum.FOUND, email="found@worker.com"
-        )
-        account = Accounts(
-            email="lost@user.com", password="password", role=RoleEnum.USER, pesel=12345
-        )
-        match1 = Match(
-            id=1, table_name="jewelry", found_item_id=2, lost_item_id=1, status=MatchStatus.UNCONFIRMED
-        )
-        match2 = Match(
-            id=2, table_name="jewelry", found_item_id=2, lost_item_id=3, status=MatchStatus.CONFIRMED
-        )
-        matched_item = Matched_Item(
-            "jewelry", "necklace", "red", "My necklace", "xs", None, None, None, "3", "12345"
-        )
-        mock_select_items.return_value = [found_jewelry]
-        mock_select_matches.return_value = [match1, match2]
-        mock_select_item_by_id.return_value = lost_jewelry
-        mock_select_account.return_value = account
+        mock_select_match_by_id.assert_called_once_with(self.unconfirmed_match.id)
+        self.unconfirmed_match.status = MatchStatusEnum.CONFIRMED
+        mock_insert_update_match.assert_called_once_with(self.unconfirmed_match)
+        self.assertTrue(result)
 
-        result = get_confirmed_matches_with_user_pesel("found@worker.com")
-        mock_select_items.assert_called_once_with("found@worker.com")
-        mock_select_matches.assert_called_once_with(2, Jewelry)
-        mock_select_item_by_id.assert_called_once_with(3, Jewelry)
-        mock_select_account.assert_called_once_with("lost@user.com")
-        self.assertEqual(result, [matched_item])
+    @patch("webapp.service.matches_service.insert_update_match")
+    @patch("webapp.service.matches_service.insert_update_item")
+    @patch("webapp.service.matches_service.get_user_account_details")
+    @patch("webapp.service.matches_service.select_match_by_id")
+    def test_archive_match_success(self, mock_select_match_by_id, mock_get_user_account_details,
+                                                 mock_insert_update_item, mock_insert_update_match):
+        mock_select_match_by_id.return_value = self.confirmed_match
+        mock_get_user_account_details.return_value = self.owner_details
+
+        result = archive_match(str(self.confirmed_match.id), "12345678910")
+        
+        mock_select_match_by_id.assert_called_once_with(self.confirmed_match.id)
+        mock_get_user_account_details.assert_called_once_with(self.lost_item.email)
+        mock_insert_update_item.assert_called_once_with(self.archive_item)
+        self.confirmed_match.status = MatchStatusEnum.PICKED_UP
+        mock_insert_update_match.assert_called_once_with(self.confirmed_match)
+
+        returned_item_details = self.confirmed_match.found_item.to_dict()
+        returned_item_details["id"] = None
+        expected_result = [returned_item_details, self.owner_details]
+        self.assertEqual(expected_result, result)
+
+    @patch("webapp.service.matches_service.generate_pickup_report")
+    @patch("webapp.service.matches_service.archive_match")
+    def test_hand_over_and_generate_receipt_and_archive_match_success(self, mock_archive_match, mock_generate_pickup_report):
+        self.confirmed_match.status = MatchStatusEnum.PICKED_UP
+        mock_archive_match.return_value = [self.confirmed_match.found_item.to_dict(), self.owner_details]
+        mock_generate_pickup_report.return_value = "base64_encoded_pdf"
+
+        result = hand_over_and_generate_receipt_and_archive_match(str(self.confirmed_match.id), "12345678910")
+        mock_archive_match.assert_called_once_with(str(self.confirmed_match.id), "12345678910")
+        mock_generate_pickup_report.assert_called_once_with("name_surname_Pickup_Report.pdf",
+                                                            self.owner_details,
+                                                            self.confirmed_match.found_item.to_dict())
+        self.assertEqual(result, "base64_encoded_pdf")
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,8 +20,8 @@ class TestMatchesRepo(unittest.TestCase):
             session.exec(delete(Matches))
             session.commit()
 
-    # select_matches
-    def test_select_matches_success_none(self):
+    # select_matches_by_item
+    def test_select_matches_by_item_success_none(self):
         with rx.session() as session:
             session.add_all([self.account, self.item1, self.item2])
             session.commit()
@@ -29,14 +29,14 @@ class TestMatchesRepo(unittest.TestCase):
             session.refresh(self.item2)
             
         expected_result = []
-        result = select_matches(self.item1)
+        result = select_matches_by_item(self.item1)
         self.assertEqual(expected_result, result)
 
         expected_result = []
-        result = select_matches(self.item2)
+        result = select_matches_by_item(self.item2)
         self.assertEqual(expected_result, result)
 
-    def test_select_matches_success_many(self):
+    def test_select_matches_by_item_success_many(self):
         with rx.session() as session:
             session.add_all([self.account, self.item1, self.item2])
             session.commit()
@@ -49,33 +49,41 @@ class TestMatchesRepo(unittest.TestCase):
             session.refresh(matcha)
 
         expected_result = [matcha]
-        result = select_matches(self.item1, 0, 1)
+        result = select_matches_by_item(self.item1)
         self.assertCountEqual(expected_result, result)
 
         expected_result = [matcha]
-        result = select_matches(self.item2, 0, 1)
+        result = select_matches_by_item(self.item2)
         self.assertCountEqual(expected_result, result)
 
-    def test_select_matches_fail_param(self):
+    def test_select_matches_by_item_fail_param(self):
         with self.assertRaises(Exception) as context:
-            select_matches(None)
+            select_matches_by_item(None)
         self.assertEqual(str(context.exception), "item must not be None!")
 
         with self.assertRaises(Exception) as context:
-            select_matches(1234)
+            select_matches_by_item(1234)
         self.assertEqual(str(context.exception), "item must be of type Items!")
 
-        with self.assertRaises(Exception) as context:
-            select_matches(self.item1, None, None)
-        self.assertEqual(str(context.exception), "offset and limit must not be None!")
+    def test_select_match_by_id_success_one(self):
+        with rx.session() as session:
+            session.add_all([self.account, self.item1, self.item2])
+            session.commit()
+            matcha = Matches(status=MatchStatusEnum.UNCONFIRMED, percentage=100, 
+                                lost_item_id=self.item1.id, found_item_id=self.item2.id)
+            session.add(matcha)
+            session.commit()
+            session.refresh(self.item1)
+            session.refresh(self.item2)
+            session.refresh(matcha)
 
-        with self.assertRaises(Exception) as context:
-            select_matches(self.item1, "134")
-        self.assertEqual(str(context.exception), "offset and limit must be of type int!")
+        expected_result = matcha
+        result = select_match_by_id(matcha.id)
+        self.assertEqual(expected_result, result)
 
-        with self.assertRaises(Exception) as context:
-            select_matches(self.item1, 4, -2)
-        self.assertEqual(str(context.exception), "offset and limit must be at least 0, and in ascending order!")
+    def test_select_match_by_id_success_none(self):
+        result = select_match_by_id(5)
+        self.assertIsNone(result)
 
     # update match
     def test_update_match(self):

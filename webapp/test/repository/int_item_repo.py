@@ -2,8 +2,8 @@ import unittest
 import reflex as rx
 from sqlalchemy import delete
 
-from webapp.models2.models import Items, Accounts, PersonalItems, Jewelry
-from webapp.models2.enums import RoleEnum, StatusEnum, ColorEnum, SizeEnum, PersonalItemType, JewelryType
+from webapp.models2.models import Items, Accounts, PersonalItems, Jewelry, Matches
+from webapp.models2.enums import RoleEnum, StatusEnum, ColorEnum, SizeEnum, PersonalItemType, JewelryType, MatchStatusEnum
 from webapp.repository.item_repo import *
 
 class TestItemRepo(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestItemRepo(unittest.TestCase):
                                  name="name", surname="surname")
         self.item1 = PersonalItems(status=StatusEnum.LOST, description="My item", email="test@domain.com",
                                    type=PersonalItemType.PASSPORT, color=ColorEnum.RED)
-        self.item2 = Jewelry(status=StatusEnum.LOST, description="My jewelry", email="test@domain.com",
+        self.item2 = Jewelry(status=StatusEnum.FOUND, description="My jewelry", email="test@domain.com",
                                    type=JewelryType.NECKLACE, color=ColorEnum.GREEN, size=SizeEnum.XS)
     
     def tearDown(self):
@@ -98,7 +98,7 @@ class TestItemRepo(unittest.TestCase):
 
         with self.assertRaises(Exception) as context:
             insert_update_item(1234)
-        self.assertEqual(str(context.exception), "insert_update_item parameter must be of type Items!")
+        self.assertEqual(str(context.exception), "insert_update_item parameter must be of type Items or ArchivedItems!")
 
     # delete_item
     def test_delete_item_success(self):
