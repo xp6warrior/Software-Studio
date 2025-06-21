@@ -1,5 +1,5 @@
 import os
-
+# TODO Handle situation when filename is None or contains /../ in it
 def get_image(filename: str) -> bytes:
     file_path = os.getenv("IMAGE_STORE_PATH")
     if file_path is None or not isinstance(file_path, str):

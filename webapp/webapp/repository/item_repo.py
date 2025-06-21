@@ -22,22 +22,19 @@ def select_items_by_email(email: str) -> list[Items]:
             session.refresh(i)
     return items
 
-# def select_item_by_id(id: int, model_cls: object) -> rx.Model | None:
-#     if id == None:
-#         raise Exception("select_item_by_id id must not be None!")
-#     elif type(id) != int:
-#         raise Exception("select_item_by_id id must be of type int!")
+def select_item_by_id(id: int) -> Items | None:
+    if id == None:
+        raise Exception("select_item_by_id id must not be None!")
+    elif type(id) != int:
+        raise Exception("select_item_by_id id must be of type int!")
     
-#     with rx.session() as session:
-#         model = session.exec(
-#             model_cls.select().where(
-#                 model_cls.id == id
-#             )
-#         ).first()
-#         if model != None:
-#             session.commit()
-#             session.refresh(model)
-#     return model
+    with rx.session() as session:
+        item = session.exec(
+            select(Items).where(Items.id == id)
+        ).scalars().first()
+        if item != None:
+            session.refresh(item)
+    return item
 
 def insert_update_item(item: Items):
     if item == None:

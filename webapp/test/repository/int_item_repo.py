@@ -48,6 +48,18 @@ class TestItemRepo(unittest.TestCase):
             select_items_by_email(1234)
         self.assertEqual(str(context.exception), "select_items_by_email parameter must be of type str!")
 
+    # select_item_by_id
+    def test_select_item_buy_id_success(self):
+        with rx.session() as session:
+            session.add_all([self.account, self.item1, self.item2])
+            session.commit()
+            session.refresh(self.item1)
+            session.refresh(self.item2)
+
+        expected_results = self.item1
+        results = select_item_by_id(self.item1.id)
+        self.assertEqual(expected_results, results)
+
     # insert/update_item
     def test_insert_item_success(self):
         with rx.session() as session:
