@@ -47,7 +47,7 @@ class TestCreateAccount(unittest.TestCase):
         result = login(self.account.email, self.account.password)
 
         mock_select_account_by_email.assert_called_once_with(self.account.email)
-        self.assertEqual(result, "user")
+        self.assertEqual(result, "USER")
 
     @patch("webapp.service.account_service.select_account_by_email")
     def test_login_fail(self, mock_select_account_by_email):
@@ -71,7 +71,7 @@ class TestCreateAccount(unittest.TestCase):
             "name": "name",
             "surname": "surname",
             "email": "test@domain.com",
-            "role": "user"
+            "role": "USER"
         })
 
     @patch("webapp.service.account_service.select_account_by_email")
@@ -92,7 +92,7 @@ class TestCreateAccount(unittest.TestCase):
             "name": "name",
             "surname": "surname",
             "email": "test@domain.com",
-            "role": "user"
+            "role": "USER"
         }])
 
     @patch("webapp.service.account_service.select_account_by_email")

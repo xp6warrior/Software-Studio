@@ -25,7 +25,7 @@ class TestMatchesService(unittest.TestCase):
         )
         self.archive_item = ArchivedItems(
             owner_email="owner@domain.com", owner_name="name", owner_surname="surname",
-            owner_pesel="12345678910", item_summary="Category: personal_items, Description: Personal Item, Date submitted: None, Type: passport, Color: red"
+            owner_pesel="12345678910", item_summary="Category: Personal Items, Description: Personal Item, Date submitted: None, Type: Passport, Color: Red"
         )
         self.owner_details = {
             "name": "name",
@@ -45,31 +45,7 @@ class TestMatchesService(unittest.TestCase):
         mock_select_matches_by_item.assert_called_once_with(self.found_item)
         self.assertEqual(result, [{
             "match_id": "1",
-            "lost": {
-                "id": "2",
-                "category": "personal_items",
-                "status": "lost",
-                "description": "Personal Item",
-                "created_at": "None",
-                "email": "owner@domain.com",
-                "item_type": "passport",
-                "attributes": {
-                    "color": "red"
-                }
-            },
-            "found": {
-                "id": "1",
-                "category": "personal_items",
-                "status": "found",
-                "description": "Personal Item",
-                "created_at": "None",
-                "email": "found@domain.com",
-                "item_type": "passport",
-                "attributes": {
-                    "color": "red"
-                }
-            },
-            "percentage": "100"
+            "synopsis": "Red Passport"
         }])
 
     @patch("webapp.service.matches_service.select_items_by_email")
@@ -79,6 +55,39 @@ class TestMatchesService(unittest.TestCase):
         result = get_unconfirmed_matches(self.found_item.email)
         mock_select_items_by_email.assert_called_once_with(self.found_item.email)
         self.assertFalse(result)
+
+    @patch("webapp.service.matches_service.select_match_by_id")
+    def test_unconfirmed_match_success(self, mock_select_match_by_id):
+        mock_select_match_by_id.return_value = self.unconfirmed_match
+        result = get_unconfirmed_match("1")
+        self.assertEqual(result, {
+            "match_id": "1",
+            "lost": {
+                "id": "2",
+                "category": "Personal Items",
+                "status": "lost",
+                "description": "Personal Item",
+                "created_at": "None",
+                "email": "owner@domain.com",
+                "item_type": "Passport",
+                "attributes": {
+                    "color": "Red"
+                }
+            },
+            "found": {
+                "id": "1",
+                "category": "Personal Items",
+                "status": "found",
+                "description": "Personal Item",
+                "created_at": "None",
+                "email": "found@domain.com",
+                "item_type": "Passport",
+                "attributes": {
+                    "color": "Red"
+                }
+            },
+            "percentage": "100"
+        })
 
     @patch("webapp.service.matches_service.get_user_account_details")
     @patch("webapp.service.matches_service.select_matches_by_item")
@@ -96,14 +105,14 @@ class TestMatchesService(unittest.TestCase):
             "match_id": "2",
             "found": {
                 "id": "1",
-                "category": "personal_items",
+                "category": "Personal Items",
                 "status": "found",
                 "description": "Personal Item",
                 "created_at": "None",
                 "email": "found@domain.com",
-                "item_type": "passport",
+                "item_type": "Passport",
                 "attributes": {
-                    "color": "red"
+                    "color": "Red"
                 }
             },
             "owner": self.owner_details
@@ -129,16 +138,40 @@ class TestMatchesService(unittest.TestCase):
         mock_insert_update_match.assert_called_once_with(self.unconfirmed_match)
         self.assertTrue(result)
 
+    @patch("webapp.service.matches_service.generate_pickup_report")
     @patch("webapp.service.matches_service.insert_update_match")
     @patch("webapp.service.matches_service.insert_update_item")
     @patch("webapp.service.matches_service.get_user_account_details")
     @patch("webapp.service.matches_service.select_match_by_id")
-    def test_archive_match_success(self, mock_select_match_by_id, mock_get_user_account_details,
-                                                 mock_insert_update_item, mock_insert_update_match):
+    def test_hand_over_and_archive_match_success_receipt(self, mock_select_match_by_id, mock_get_user_account_details,
+                                                  mock_insert_update_item, mock_insert_update_match, mock_generate_pickup_report):
+        mock_select_match_by_id.return_value = self.confirmed_match
+        mock_get_user_account_details.return_value = self.owner_details
+        mock_generate_pickup_report.return_value = "base64_encoded_pdf"
+
+        result = hand_over_and_archive_match(str(self.confirmed_match.id), "12345678910", True)
+        
+        mock_select_match_by_id.assert_called_once_with(self.confirmed_match.id)
+        mock_get_user_account_details.assert_called_once_with(self.lost_item.email)
+        mock_insert_update_item.assert_called_once_with(self.archive_item)
+        self.confirmed_match.status = MatchStatusEnum.PICKED_UP
+        mock_insert_update_match.assert_called_once_with(self.confirmed_match)
+        self.owner_details["pesel"] = "12345678910"
+        mock_generate_pickup_report.assert_called_once_with(self.owner_details, self.found_item.to_dict())
+
+        expected_result = "base64_encoded_pdf"
+        self.assertEqual(expected_result, result)
+
+    @patch("webapp.service.matches_service.insert_update_match")
+    @patch("webapp.service.matches_service.insert_update_item")
+    @patch("webapp.service.matches_service.get_user_account_details")
+    @patch("webapp.service.matches_service.select_match_by_id")
+    def test_hand_over_and_archive_match_success_no_receipt(self, mock_select_match_by_id, mock_get_user_account_details,
+                                                  mock_insert_update_item, mock_insert_update_match):
         mock_select_match_by_id.return_value = self.confirmed_match
         mock_get_user_account_details.return_value = self.owner_details
 
-        result = archive_match(str(self.confirmed_match.id), "12345678910")
+        result = hand_over_and_archive_match(str(self.confirmed_match.id), "12345678910", False)
         
         mock_select_match_by_id.assert_called_once_with(self.confirmed_match.id)
         mock_get_user_account_details.assert_called_once_with(self.lost_item.email)
@@ -146,24 +179,7 @@ class TestMatchesService(unittest.TestCase):
         self.confirmed_match.status = MatchStatusEnum.PICKED_UP
         mock_insert_update_match.assert_called_once_with(self.confirmed_match)
 
-        returned_item_details = self.confirmed_match.found_item.to_dict()
-        returned_item_details["id"] = None
-        expected_result = [returned_item_details, self.owner_details]
-        self.assertEqual(expected_result, result)
-
-    @patch("webapp.service.matches_service.generate_pickup_report")
-    @patch("webapp.service.matches_service.archive_match")
-    def test_hand_over_and_generate_receipt_and_archive_match_success(self, mock_archive_match, mock_generate_pickup_report):
-        self.confirmed_match.status = MatchStatusEnum.PICKED_UP
-        mock_archive_match.return_value = [self.confirmed_match.found_item.to_dict(), self.owner_details]
-        mock_generate_pickup_report.return_value = "base64_encoded_pdf"
-
-        result = hand_over_and_generate_receipt_and_archive_match(str(self.confirmed_match.id), "12345678910")
-        mock_archive_match.assert_called_once_with(str(self.confirmed_match.id), "12345678910")
-        mock_generate_pickup_report.assert_called_once_with("name_surname_Pickup_Report.pdf",
-                                                            self.owner_details,
-                                                            self.confirmed_match.found_item.to_dict())
-        self.assertEqual(result, "base64_encoded_pdf")
+        self.assertTrue(result)
 
 if __name__ == "__main__":
     unittest.main()

@@ -382,7 +382,13 @@ class Matches(Base):
                              lazy="joined")
     found_item = relationship("Items", back_populates="_found_matches", foreign_keys=[found_item_id],
                               lazy="joined")
-
+    
+    def __str__(self):
+        synopsis = ""
+        for k, v in self.found_item.to_dict()["attributes"].items():
+            synopsis += f"{v} "
+        synopsis += self.found_item.type
+        return synopsis
 
 class ArchivedItems(Base):
     __tablename__ = "archiveditems"

@@ -18,12 +18,22 @@ def get_unconfirmed_matches(worker_email: str) -> list[dict[str, str]]:
             if m.status == MatchStatusEnum.UNCONFIRMED:
                 matches_list.append({
                     "match_id": str(m.id),
-                    "lost": m.lost_item.to_dict(),
-                    "found": m.found_item.to_dict(),
-                    "percentage": str(m.percentage)
+                    "synopsis": m.__str__()
                 })
 
     return matches_list
+
+def get_unconfirmed_match(match_id: str):
+    match = select_match_by_id(int(match_id))
+    if match is None:
+        return False
+    else:
+        return {
+            "match_id": match_id,
+            "lost": match.lost_item.to_dict(),
+            "found": match.found_item.to_dict(),
+            "percentage": str(match.percentage)
+        }
 
 def get_confirmed_matches_with_owner_info(worker_email: str) -> list[dict[str, str]]:
     matches_list = []
@@ -56,29 +66,11 @@ def confirm_match(match_id: str) -> bool:
         insert_update_match(match)
         return True
     
-def hand_over_and_archive_match(match_id: str, owner_pesel: str) -> bool:
-    if archive_match(match_id, owner_pesel) is not None:
-        return True
-    else:
-        return False
-
-def hand_over_and_generate_receipt_and_archive_match(match_id: str, owner_pesel: str) -> str:
-    results = archive_match(match_id, owner_pesel)
-    
-    if results is not None:
-        item_details = results[0]
-        owner_details = results[1]
-        filename = f"{owner_details['name']}_{owner_details['surname']}_Pickup_Report.pdf"
-        return generate_pickup_report(filename, owner_details, item_details)
-    else:
-        return False
-        
-
-def archive_match(match_id: str, owner_pesel: str) -> ArchivedItems:
+def hand_over_and_archive_match(match_id: str, pesel: str, print_receipt: bool) -> bytes:
     match = select_match_by_id(int(match_id))
 
     if match == None:
-        return None
+        return False
     elif match.status == MatchStatusEnum.CONFIRMED:
         # owner_details should never be false due to the foreign key constraint on the lost_item email
         # if it is, this function will throw an exception, blocking the handover
@@ -86,12 +78,15 @@ def archive_match(match_id: str, owner_pesel: str) -> ArchivedItems:
         item_summary = match.found_item.__str__()
 
         archive = ArchivedItems(item_summary=item_summary, owner_email=owner_details["email"], owner_name=owner_details["name"],
-                                owner_surname=owner_details["surname"], owner_pesel=owner_pesel)
+                                owner_surname=owner_details["surname"], owner_pesel=pesel)
         insert_update_item(archive)
 
         match.status = MatchStatusEnum.PICKED_UP
         insert_update_match(match)
 
-        item_details = match.found_item.to_dict()
-        item_details["id"] = archive.id
-        return [item_details, owner_details]
+        if print_receipt:
+            item_details = match.found_item.to_dict()
+            owner_details["pesel"] = pesel
+            return generate_pickup_report(owner_details, item_details)
+        else:
+            return True

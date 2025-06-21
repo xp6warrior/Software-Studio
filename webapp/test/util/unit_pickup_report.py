@@ -1,5 +1,4 @@
 import unittest
-import base64
 from webapp.util.pickup_report import generate_pickup_report
 
 class TestPickupReport(unittest.TestCase):
@@ -20,10 +19,9 @@ class TestPickupReport(unittest.TestCase):
             "description": "Polish passport"
         }
 
-        result = generate_pickup_report("test.pdf", owner_details, item_details)
-        pdf_data = base64.b64decode(result, validate=True)
+        result = generate_pickup_report(owner_details, item_details)
         with open("/webapp/webapp/test/util/test.pdf", 'wb') as f:
-            f.write(pdf_data)
+            f.write(result)
 
 if __name__ == "__main__":
     unittest.main()

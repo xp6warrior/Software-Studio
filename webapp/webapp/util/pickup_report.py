@@ -12,9 +12,8 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet
 import datetime
 import io
-import base64
 
-def generate_pickup_report(filename: str, owner_details: dict[str, str], item_details: dict[str, str]):
+def generate_pickup_report(owner_details: dict[str, str], item_details: dict[str, str]):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     img_file = open("assets/BTUw.png", "rb")
@@ -89,8 +88,7 @@ def generate_pickup_report(filename: str, owner_details: dict[str, str], item_de
     doc.build(elements)
     buffer.seek(0)
     pdf_bytes = buffer.read()
-    encoded_string = base64.b64encode(pdf_bytes).decode("utf-8")
     buffer.close()
     img_file.close()
 
-    return encoded_string
+    return pdf_bytes
