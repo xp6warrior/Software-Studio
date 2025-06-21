@@ -15,8 +15,8 @@ import io
 import base64
 
 def generate_pickup_report(filename: str, owner_details: dict[str, str], item_details: dict[str, str]):
-    doc = SimpleDocTemplate(filename, pagesize=A4)
     buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
     img_file = open("assets/BTUw.png", "rb")
     styles = getSampleStyleSheet()
     elements = []

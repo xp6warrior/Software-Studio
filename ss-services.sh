@@ -78,6 +78,7 @@ then
         echo "Running webapp unit tests..."
         docker run \
             --name ss-webapp-test \
+            --volume ./webapp/test/util:/webapp/webapp/test/util \
             --rm \
             software-studio-webapp \
             python3 -m unittest discover -s test -p unit_*.py

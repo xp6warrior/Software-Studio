@@ -4,7 +4,6 @@ from webapp.util.pickup_report import generate_pickup_report
 
 class TestPickupReport(unittest.TestCase):
 
-    # TODO make this export pdf into pc rather than into docker container
     def test_generate_pickup_report(self):
         owner_details = {
             "name": "name",
@@ -22,9 +21,8 @@ class TestPickupReport(unittest.TestCase):
         }
 
         result = generate_pickup_report("test.pdf", owner_details, item_details)
-        
         pdf_data = base64.b64decode(result, validate=True)
-        with open("test.pdf", 'wb') as f:
+        with open("/webapp/webapp/test/util/test.pdf", 'wb') as f:
             f.write(pdf_data)
 
 if __name__ == "__main__":
