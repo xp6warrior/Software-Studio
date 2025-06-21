@@ -39,7 +39,7 @@ def login(email: str, password: str) -> str:
     else:
         return account.role
     
-def get_user_account_details(email: str) -> dict[str, any]:
+def get_user_account_details(email: str) -> dict[str, str]:
     account = select_account_by_email(email)
     if account == None:
         return False
@@ -51,7 +51,7 @@ def get_user_account_details(email: str) -> dict[str, any]:
             "role": account.role
         }
     
-def get_accounts() -> list[dict[str, any]]:
+def get_accounts() -> list[dict[str, str]]:
     accounts = select_all_accounts()
     accounts_list = []
     for acc in accounts:

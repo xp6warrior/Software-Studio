@@ -66,25 +66,21 @@ class TestMatchesService(unittest.TestCase):
                 "id": "2",
                 "category": "Personal Items",
                 "status": "lost",
-                "description": "Personal Item",
+                "desc": "Personal Item",
                 "created_at": "None",
                 "email": "owner@domain.com",
-                "item_type": "Passport",
-                "attributes": {
-                    "color": "Red"
-                }
+                "it": "Passport",
+                "color": "Red"
             },
             "found": {
                 "id": "1",
                 "category": "Personal Items",
                 "status": "found",
-                "description": "Personal Item",
+                "desc": "Personal Item",
                 "created_at": "None",
                 "email": "found@domain.com",
-                "item_type": "Passport",
-                "attributes": {
-                    "color": "Red"
-                }
+                "it": "Passport",
+                "color": "Red"
             },
             "percentage": "100"
         })
@@ -107,13 +103,11 @@ class TestMatchesService(unittest.TestCase):
                 "id": "1",
                 "category": "Personal Items",
                 "status": "found",
-                "description": "Personal Item",
+                "desc": "Personal Item",
                 "created_at": "None",
                 "email": "found@domain.com",
-                "item_type": "Passport",
-                "attributes": {
-                    "color": "Red"
-                }
+                "it": "Passport",
+                "color": "Red"
             },
             "owner": self.owner_details
         }])

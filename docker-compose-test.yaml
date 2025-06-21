@@ -22,7 +22,6 @@ services:
     container_name: ss-webapp-test
     environment:
       - DATABASE_URL=postgresql://root:root@db/postgres
-      - IMAGE_STORE_PATH=/var/lib/back2u
     depends_on:
       db:
         condition: service_healthy

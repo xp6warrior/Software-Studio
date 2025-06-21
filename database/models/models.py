@@ -90,9 +90,9 @@ class Items(Base):
     def to_dict(self):
         return {
             "id": str(self.id),
-            "category": self.category,
-            "status": self.status,
-            "description": self.description,
+            "category": self.category.value,
+            "status": self.status.value,
+            "desc": self.description,
             "created_at": str(self.created_at),
             "email": self.email
         }
@@ -116,10 +116,8 @@ class PersonalItems(Items):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
-            "item_type": self.type,
-            "attributes": {
-                "color": self.color
-            }
+            "it": self.type.value,
+            "color": self.color.value
         })
         return base_dict
     
@@ -145,11 +143,9 @@ class Jewelry(Items):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
-            "item_type": self.type,
-            "attributes": {
-                "color": self.color,
-                "size": self.size
-            }
+            "it": self.type.value,
+            "color": self.color.value,
+            "size": self.size.value
         })
         return base_dict
     
@@ -176,12 +172,10 @@ class Accessories(Items):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
-            "item_type": self.type,
-            "attributes": {
-                "color": self.color,
-                "material": self.material,
-                "brand": self.brand
-            }
+            "it": self.type.value,
+            "color": self.color.value,
+            "material": self.material.value,
+            "brand": self.brand
         })
         return base_dict
     
@@ -209,13 +203,11 @@ class TravelItems(Items):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
-            "item_type": self.type,
-            "attributes": {
-                "color": self.color,
-                "size": self.size,
-                "material": self.material,
-                "brand": self.brand
-            }
+            "it": self.type.value,
+            "color": self.color.value,
+            "size": self.size.value,
+            "material": self.material.value,
+            "brand": self.brand
         })
         return base_dict
     
@@ -242,12 +234,10 @@ class ElectronicDevices(Items):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
-            "item_type": self.type,
-            "attributes": {
-                "color": self.color,
-                "material": self.material,
-                "brand": self.brand
-            }
+            "it": self.type.value,
+            "color": self.color.value,
+            "material": self.material.value,
+            "brand": self.brand
         })
         return base_dict
     
@@ -275,13 +265,11 @@ class Clothing(Items):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
-            "item_type": self.type,
-            "attributes": {
-                "color": self.color,
-                "size": self.size,
-                "material": self.material,
-                "brand": self.brand
-            }
+            "it": self.type.value,
+            "color": self.color.value,
+            "size": self.size.value,
+            "material": self.material.value,
+            "brand": self.brand
         })
         return base_dict
     
@@ -309,13 +297,11 @@ class OfficeItems(Items):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
-            "item_type": self.type,
-            "attributes": {
-                "color": self.color,
-                "size": self.size,
-                "material": self.material,
-                "name": self.name
-            }
+            "it": self.type.value,
+            "color": self.color.value,
+            "size": self.size.value,
+            "material": self.material.value,
+            "name": self.name
         })
         return base_dict
     
@@ -344,14 +330,12 @@ class OtherItems(Items):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
-            "item_type": self.type,
-            "attributes": {
-                "color": self.color,
-                "size": self.size,
-                "material": self.material,
-                "brand": self.brand,
-                "name": self.name
-            }
+            "it": self.type.value,
+            "color": self.color.value,
+            "size": self.size.value,
+            "material": self.material.value,
+            "brand": self.brand,
+            "name": self.name
         })
         return base_dict
     
@@ -383,9 +367,10 @@ class Matches(Base):
     found_item = relationship("Items", back_populates="_found_matches", foreign_keys=[found_item_id],
                               lazy="joined")
     
+    # TODO Figure out synopsis function
     def __str__(self):
         synopsis = ""
-        for k, v in self.found_item.to_dict()["attributes"].items():
+        for k, v in self.found_item.to_dict().items():
             synopsis += f"{v} "
         synopsis += self.found_item.type
         return synopsis

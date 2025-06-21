@@ -20,7 +20,7 @@ class TestPickupReport(unittest.TestCase):
         }
 
         result = generate_pickup_report(owner_details, item_details)
-        with open("/webapp/webapp/test/util/test.pdf", 'wb') as f:
+        with open("/webapp/webapp/test/results/test.pdf", 'wb') as f:
             f.write(result)
 
 if __name__ == "__main__":
