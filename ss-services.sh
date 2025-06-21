@@ -80,6 +80,7 @@ then
             --name ss-webapp-test \
             --volume ./webapp/test/results:/webapp/webapp/test/results \
             -e IMAGE_STORE_PATH=/webapp/webapp/test/results \
+            -e CONFIGS_PATH=/webapp/webapp/test/results \
             --rm \
             software-studio-webapp \
             python3 -m unittest discover -s test -p unit_*.py
