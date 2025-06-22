@@ -60,6 +60,16 @@ class TestItemRepo(unittest.TestCase):
         results = select_item_by_id(self.item1.id)
         self.assertEqual(expected_results, results)
 
+    def test_select_item_stats(self):
+        with rx.session() as session:
+            session.add_all([self.account, self.item1])
+            session.commit()
+            session.refresh(self.item1)
+
+        expected_results = [(StatusEnum.LOST, 1)]
+        result = select_item_stats()
+        self.assertEqual(expected_results, result)
+
     # insert/update_item
     def test_insert_item_success(self):
         with rx.session() as session:

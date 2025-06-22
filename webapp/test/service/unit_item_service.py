@@ -1,15 +1,23 @@
 import unittest
 from unittest.mock import patch, call
-from webapp.models2.models import PersonalItems, Matches
-from webapp.models2.enums import PersonalItemType, ColorEnum, MatchStatusEnum
+from webapp.models2.models import PersonalItems, Matches, Accounts
+from webapp.models2.enums import PersonalItemType, ColorEnum, MatchStatusEnum, RoleEnum
 from webapp.service.item_service import *
 
 class TestItemService(unittest.TestCase):
 
     def setUp(self):
+        self.account = Accounts(
+            email="test@test.com", password="password", name="name", surname="surname",
+            role=RoleEnum.USER
+        )
+        self.to_insert_item = PersonalItems(
+            type=PersonalItemType.KEYS, color=ColorEnum.GREEN,
+            description="Small key", status=StatusEnum.LOST, email="test@test.com"
+        )
         self.lost_item = PersonalItems(
             id=1, type=PersonalItemType.KEYS, color=ColorEnum.GREEN,
-            description="Small key", status=StatusEnum.LOST, email="test@test.com"
+            description="Small key", status=StatusEnum.LOST, email="test@test.com",
         )
         self.found_item = PersonalItems(
             id=2, type=PersonalItemType.KEYS, color=ColorEnum.GREEN,
@@ -128,7 +136,7 @@ class TestItemService(unittest.TestCase):
         result = delete_lost_item("test@test.com", "1")
         mock_select_item_by_id.assert_called_once_with(1)
         mock_delete_item.assert_called_once_with(1)
-        mock_delete_image.assert_called_once_with(None)
+        mock_delete_image.assert_called_once_with('1')
         self.assertTrue(result)
 
     @patch("webapp.service.item_service.select_item_by_id")
@@ -143,6 +151,22 @@ class TestItemService(unittest.TestCase):
 
         mock_select_item_by_id.assert_has_calls([call(1), call(1)])
 
+    @patch("webapp.service.item_service.save_image")
+    @patch("webapp.service.item_service.insert_update_item")
+    @patch("webapp.service.item_service.select_account_by_email")
+    def test_submit_item_success(self, mock_select_account_by_email, mock_insert_update_item, mock_save_image):
+        mock_select_account_by_email.return_value = self.account
+        
+        submit_item("test@test.com", {
+            "image": "imagebytes",
+            "category": "Personal Items",
+            "it": "Keys",
+            "desc": "Small Key",
+            "color": "Green"
+        })
+        mock_select_account_by_email.assert_called_once_with("test@test.com")
+        mock_save_image.assert_called_once_with('None', "imagebytes")
+        mock_insert_update_item.assert_called_once_with(self.to_insert_item)
 
     # @patch("webapp.service.item_service.select_matches")
     # @patch("webapp.service.item_service.select_items")

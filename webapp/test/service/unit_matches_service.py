@@ -24,7 +24,7 @@ class TestMatchesService(unittest.TestCase):
             lost_item=self.lost_item, found_item=self.found_item
         )
         self.archive_item = ArchivedItems(
-            owner_email="owner@domain.com", owner_name="name", owner_surname="surname",
+            owner_email="owner@domain.com", owner_name="name", owner_surname="surname", match_id=2,
             owner_pesel="12345678910", item_summary="Category: Personal Items, Description: Personal Item, Date submitted: None, Type: Passport, Color: Red"
         )
         self.owner_details = {

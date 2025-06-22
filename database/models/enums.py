@@ -60,7 +60,7 @@ class PersonalItemType(str, Enum):
     ID_CARD = "ID Card"
     PASSPORT = "Passport"
     KEYS = "Keys"
-    CREDIT_DEBIT_CARD = "Credit/Debit Card"
+    CREDIT_DEBIT_CARD = "Credit Card"
     OTHER = "Other"
 
 class JewelryType(str, Enum):

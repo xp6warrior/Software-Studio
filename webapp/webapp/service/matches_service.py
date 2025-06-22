@@ -78,7 +78,7 @@ def hand_over_and_archive_match(match_id: str, pesel: str, print_receipt: bool) 
         item_summary = match.found_item.__str__()
 
         archive = ArchivedItems(item_summary=item_summary, owner_email=owner_details["email"], owner_name=owner_details["name"],
-                                owner_surname=owner_details["surname"], owner_pesel=pesel)
+                                owner_surname=owner_details["surname"], owner_pesel=pesel, match_id=match.id)
         insert_update_item(archive)
 
         match.status = MatchStatusEnum.PICKED_UP

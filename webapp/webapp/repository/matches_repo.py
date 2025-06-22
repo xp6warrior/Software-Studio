@@ -1,8 +1,8 @@
 import reflex as rx
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from webapp.models2.models import Matches, Items
-from webapp.models2.enums import StatusEnum
+from webapp.models2.enums import StatusEnum, MatchStatusEnum
 
 def select_matches_by_item(item: Items) -> list[Matches]:
     if item == None:
@@ -32,6 +32,20 @@ def select_match_by_id(match_id: int) -> Matches:
             select(Matches).where(Matches.id == match_id)
         ).scalars().first()
     return match
+
+def select_match_stats():
+    with rx.session() as session:
+        results = session.exec(
+            select(Matches.status, func.count()).group_by(Matches.status)
+        ).all()
+    return results
+
+def select_false_pickup_matches() -> list[Matches]:
+    with rx.session() as session:
+        matches = session.exec(
+            select(Matches).where(Matches.status == MatchStatusEnum.FALSE_PICKUP)
+        ).scalars().all()
+    return matches
 
 def insert_update_match(match: Matches):
     if match == None:

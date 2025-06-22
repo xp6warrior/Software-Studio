@@ -1,8 +1,17 @@
 from webapp.models2.models import Items
-from webapp.models2.enums import MatchStatusEnum
+from webapp.models2.enums import MatchStatusEnum, RoleEnum
 from webapp.repository.item_repo import *
-from webapp.repository.matches_repo import select_matches_by_item
+from webapp.repository.account_repo import select_account_by_email
+from webapp.repository.matches_repo import select_matches_by_item, select_false_pickup_matches
 from webapp.repository.image_repo import *
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.dialects.postgresql import ENUM as PG_ENUM
+from sqlalchemy.sql.sqltypes import Enum as SA_ENUM
+
+category_to_class_map = {
+    cls.__mapper_args__["polymorphic_identity"].value: cls
+    for cls in Items.__subclasses__()
+}
 
 def get_submitted_lost_items(user_email: str) -> list[dict[str, str]]:
     items_list = []
@@ -35,14 +44,102 @@ def get_submitted_lost_items(user_email: str) -> list[dict[str, str]]:
     
     return items_list
 
+def submit_item(email: str, item: dict[str, str]):
+    cls = category_to_class_map.get(item["category"])
+    i = cls()
+
+    item['type'] = item.pop('it')
+    item['description'] = item.pop('desc')
+
+    for k, v in item.items():
+        if k != "category" and hasattr(i, k):
+            attr = getattr(type(i), k, None)
+
+            if isinstance(attr, InstrumentedAttribute):
+                col_type = attr.property.columns[0].type
+
+                if isinstance(col_type, (SA_ENUM, PG_ENUM)):
+                    enum_class = col_type.enum_class
+                    v = enum_class(v)
+
+            setattr(i, k, v)
+
+    acc = select_account_by_email(email)
+    i.email = email
+    if acc.role == RoleEnum.USER:
+        i.status = StatusEnum.LOST
+    elif acc.role == RoleEnum.WORKER:
+        i.status = StatusEnum.FOUND
+
+    try:
+        insert_update_item(i)
+    except:
+        return "Error when submitting item"
+    if 'image' in item and item['image'] is not None:
+        save_image(str(i.id), item['image'])
+    return "Item successfully submitted"
+
+def update_lost_item(user_email: str, item_id: str, item: dict[str, str]):
+    i = select_item_by_id(int(item_id))
+    if i.email == user_email:
+        item['description'] = item.pop('desc')
+
+        for k, v in item.items():
+            if k != "category" and hasattr(i, k):
+                attr = getattr(type(i), k, None)
+
+                if isinstance(attr, InstrumentedAttribute):
+                    col_type = attr.property.columns[0].type
+
+                    if isinstance(col_type, (SA_ENUM, PG_ENUM)):
+                        enum_class = col_type.enum_class
+                        v = enum_class(v)
+
+                setattr(i, k, v)
+
+        try:
+            insert_update_item(i)
+        except:
+            return "Error when submitting item"
+        if 'image' in item and item['image'] is not None:
+            update_image(str(i.id), item['image'])
+        return "Item successfully submitted"
+        
+    else:
+        return "Error when submitting item"
+
 def delete_lost_item(user_email: str, item_id: str) -> bool:
     item = select_item_by_id(int(item_id))
     if item is not None and item.email == user_email:
-        delete_image(item.image_name)
+        delete_image(item_id)
         delete_item(int(item_id))
         return True
     else:
         return False
+
+def report_false_pickup(user_email: str, item_id: str):
+    item = select_item_by_id(int(item_id))
+    if item is not None and item.email == user_email:
+        matches = select_matches_by_item(item)
+        for m in matches:
+            if m.status == MatchStatusEnum.PICKED_UP:
+                m.status = MatchStatusEnum.FALSE_PICKUP
+                return True
+    return False
+
+def get_false_pickup_reports():
+    reports_list = []
+    matches = select_false_pickup_matches()
+    for m in matches:
+        acc = select_account_by_email(m.lost_item.email)
+        archive = select_archive_item_by_match_id(m.id)
+        report = {
+            "id": str(m.id),
+            "owner_fullname": acc.name + " " + acc.surname,
+            "pickupby_fullname": + archive.owner_name + " " + archive.owner_surname
+        }
+        reports_list.append(report)
+    return reports_list
 
 # models_list = [cls for name, cls in inspect.getmembers(models, inspect.isclass)
 #                if cls != models.Accounts and cls != models.Match]

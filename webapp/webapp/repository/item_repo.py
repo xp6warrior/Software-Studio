@@ -1,5 +1,5 @@
 import reflex as rx
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from webapp.models2.models import Items, Matches, ArchivedItems
 from webapp.models2.enums import StatusEnum
@@ -35,6 +35,29 @@ def select_item_by_id(id: int) -> Items | None:
         if item != None:
             session.refresh(item)
     return item
+
+def select_archive_item_by_match_id(match_id: int) -> ArchivedItems:
+    with rx.session() as session:
+        item = session.exec(
+            select(ArchivedItems).where(ArchivedItems.match_id == match_id)
+        ).scalars().first()
+        if item != None:
+            session.refresh(item)
+    return item
+
+def select_item_stats():
+    with rx.session() as session:
+        results = session.exec(
+            select(Items.status, func.count()).group_by(Items.status)
+        ).all()
+    return results
+
+def select_num_of_archived_items():
+    with rx.session() as session:
+        result = session.exec(
+            select(func.count()).select_from(ArchivedItems)
+        ).scalar_one()
+    return result
 
 def insert_update_item(item: Items):
     if item == None:
