@@ -3,6 +3,7 @@ from webapp.repository.item_repo import *
 from webapp.repository.account_repo import select_account
 from webapp.items import *
 from webapp.models.models import *
+import inspect
 
 models_list = {
     cls.__tablename__: cls for name, cls in inspect.getmembers(models, inspect.isclass)

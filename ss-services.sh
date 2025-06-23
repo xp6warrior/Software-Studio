@@ -49,8 +49,8 @@ then
         sleep 1
     done
 
-    cd database && \
-    alembic upgrade head
+alembic upgrade head
+docker compose run --rm migrate
 
 elif [[ "$1" = "migrate" ]]
 then

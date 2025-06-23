@@ -1,93 +1,115 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.inspection import inspect
-from models.models import Match
-from models import models
-from models import enums
-from db import SessionLocal
-import logging
+from sqlalchemy import and_
+from sqlalchemy.orm import aliased
+from itertools import product
+from mail.send import send_templated_email
+from models.models import Accounts  
 
-MATCH_THRESHOLDS = {
-    models.PersonalItems: 1,
-    models.Jewelry: 2,
-    models.Accessories: 3,
-    models.TravelItems: 3,
-    models.ElectronicDevices: 3,
-    models.Clothing: 3,
-    models.OfficeItems: 2,
-    models.OtherItems: 3,
-}
+from models.models import (
+    Items,
+    PersonalItems,
+    Jewelry,
+    Accessories,
+    TravelItems,
+    ElectronicDevices,
+    Clothing,
+    OfficeItems,
+    OtherItems,
+    Matches,
+    CategoryEnum,
+    StatusEnum,
+    MatchStatusEnum,
+)
 
-EXCLUDED_COLUMNS = {'id', 'status', 'email', 'description'} #these attributes are useless for matching so we skip them
 
-MATCH_CONFIG = {}
-for model_cls, threshold in MATCH_THRESHOLDS.items():
-    columns = [c.key for c in inspect(model_cls).columns if c.key not in EXCLUDED_COLUMNS]
-    MATCH_CONFIG[model_cls] = (columns, threshold)
+def get_subclass_model(category: CategoryEnum):
+    return {
+        CategoryEnum.PERSONAL_ITEMS: PersonalItems,
+        CategoryEnum.JEWELRY: Jewelry,
+        CategoryEnum.ACCESSORIES: Accessories,
+        CategoryEnum.TRAVEL_ITEMS: TravelItems,
+        CategoryEnum.ELECTRONIC_DEVICES: ElectronicDevices,
+        CategoryEnum.CLOTHING: Clothing,
+        CategoryEnum.OFFICE_ITEMS: OfficeItems,
+        CategoryEnum.OTHER_ITEMS: OtherItems,
+    }[category]
 
-def get_relevant_items(session: Session, model_cls, status):
-    return session.query(model_cls).filter(model_cls.status == status).all()
 
-def calculate_match_percentage(attrs, item1, item2):
-    #returns the percentage of match
-    total = len(attrs)
-    if total == 0:
-        return 0
-    matches = sum(getattr(item1, attr) == getattr(item2, attr) for attr in attrs)
-    return int((matches / total) * 100)
+def get_matching_fields_and_threshold(category: CategoryEnum):
+    return {
+        CategoryEnum.PERSONAL_ITEMS: (["type", "color"], 1),
+        CategoryEnum.JEWELRY: (["type", "color", "size"], 2),
+        CategoryEnum.ACCESSORIES: (["type", "color", "material", "brand"], 2),
+        CategoryEnum.TRAVEL_ITEMS: (["type", "color", "size", "material", "brand"], 3),
+        CategoryEnum.ELECTRONIC_DEVICES: (["type", "color", "material", "brand"], 3),
+        CategoryEnum.CLOTHING: (["type", "color", "size", "material", "brand"], 3),
+        CategoryEnum.OFFICE_ITEMS: (["type", "color", "size", "material", "name"], 3),
+        CategoryEnum.OTHER_ITEMS: (["type", "color", "size", "material", "brand", "name"], 3),
+    }[category]
 
-def match_items():
-    session = SessionLocal()
+def match_all_lost_and_found(session: Session):
+    for category in CategoryEnum:
+        SubModel = get_subclass_model(category)
+        match_fields, threshold = get_matching_fields_and_threshold(category)
 
-    for model_cls, (attrs, threshold) in MATCH_CONFIG.items():
-        table_name = model_cls.__tablename__
+        LostAlias = aliased(SubModel)
+        FoundAlias = aliased(SubModel)
 
-        lost_items = get_relevant_items(session, model_cls, enums.StatusEnum.LOST)
-        found_items = get_relevant_items(session, model_cls, enums.StatusEnum.FOUND)
+        lost_items = (
+            session.query(Items, LostAlias)
+            .join(LostAlias, Items.id == LostAlias.item_id)
+            .filter(
+                Items.category == category,
+                Items.status == StatusEnum.LOST
+            )
+            .all()
+        )
 
-        for lost in lost_items:
-            for found in found_items:
-                # skip if already matched
-                existing_match = session.query(Match).filter_by(
-                    table_name=table_name,
-                    lost_item_id=lost.id,
-                    found_item_id=found.id
+        found_items = (
+            session.query(Items, FoundAlias)
+            .join(FoundAlias, Items.id == FoundAlias.item_id)
+            .filter(
+                Items.category == category,
+                Items.status == StatusEnum.FOUND
+            )
+            .all()
+        )
+
+        for (lost_item, lost_sub), (found_item, found_sub) in product(lost_items, found_items):
+            match_count = sum(
+                getattr(lost_sub, attr) == getattr(found_sub, attr)
+                for attr in match_fields
+            )
+
+            if match_count >= threshold:
+                percentage = int((match_count / len(match_fields)) * 100)
+
+                already_exists = session.query(Matches).filter_by(
+                    lost_item_id=lost_item.id,
+                    found_item_id=found_item.id
                 ).first()
-                if existing_match:
-                    continue
 
-                percentage = calculate_match_percentage(attrs, lost, found)
-
-                if percentage == 0:
-                    continue  # skip useless matches
-
-                if percentage >= (threshold / len(attrs)) * 100:
-                    new_match = Match(
-                        table_name=table_name,
-                        lost_item_id=lost.id,
-                        found_item_id=found.id,
-                        status=enums.MatchStatus.UNCONFIRMED,
-                        percentage=percentage
+                if not already_exists:
+                    session.add(
+                        Matches(
+                            lost_item_id=lost_item.id,
+                            found_item_id=found_item.id,
+                            status=MatchStatusEnum.UNCONFIRMED,
+                            percentage=percentage
+                        )
                     )
-                    # TODO Fix the error type mismatch error between db and model class
-                    # Move commit to the end of the function to recreate
-                    session.add(new_match)
-                    session.commit()
 
-    session.close()
+                    # Get worker (who submitted the FOUND item)
+                    worker = session.query(Accounts).filter_by(email=found_item.email).first()
 
-def get_stats():
-    session = SessionLocal()
-    total_lost = total_found = 0
+                    if worker:
+                        send_templated_email(
+                            to=worker.email,
+                            template_id=10,
+                            name=worker.name,
+                            surname=worker.surname,
+                            item_id=found_item.id,
+                            item_type=found_item.category.value  # if enum, get string
+                        )
 
-    for model_cls in MATCH_CONFIG.keys():
-        total_lost += session.query(model_cls).filter(model_cls.status == 'lost').count()
-        total_found += session.query(model_cls).filter(model_cls.status == 'found').count()
-
-    unconfirmed_matches = session.query(Match).filter(Match.status == enums.MatchStatus.UNCONFIRMED).count()
-    confirmed_matches = session.query(Match).filter(Match.status == enums.MatchStatus.CONFIRMED).count()
-
-    session.close()
-    return [
-        {"Number of lost items": total_lost, "Number of found items": total_found},
-        {"Number of unconfirmed matches": unconfirmed_matches, "Number of confirmed matches": confirmed_matches}
-    ]
+    session.commit()

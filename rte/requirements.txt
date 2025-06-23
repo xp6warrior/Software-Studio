@@ -1,3 +1,10 @@
 SQLAlchemy
 psycopg2-binary
 APScheduler
+alembic
+alembic_postgresql_enum
+#mail:
+google-auth
+google-auth-oauthlib>=0.5.2
+google-api-python-client
+python-dotenv

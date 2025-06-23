@@ -29,6 +29,8 @@ def upgrade() -> None:
                existing_nullable=False,
                schema='archive')
     op.add_column('accessories', sa.Column('item_id', sa.Integer(), nullable=False), schema='lost_found')
+    #NO IDEA IF CORRECT - DATE TO ITEMS TABLE
+    #op.add_column('items', sa.Column('date_added', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False), schema='lost_found')
     op.drop_constraint('uq_accessories_item', 'accessories', schema='lost_found', type_='unique')
     op.drop_constraint('pk_accessories_item', 'accessories', schema='lost_found', type_='foreignkey')
     op.create_foreign_key('fk_accessories_item_id', 'accessories', 'items', ['item_id'], ['id'], source_schema='lost_found', referent_schema='lost_found', ondelete='CASCADE')
@@ -117,6 +119,8 @@ def downgrade() -> None:
     op.add_column('matches', sa.Column('created_at', postgresql.TIMESTAMP(timezone=True), server_default=sa.text('now()'), autoincrement=False, nullable=False), schema='matches')
     op.drop_constraint('fk_matches_found_item', 'matches', schema='matches', type_='foreignkey')
     op.drop_constraint('fk_matches_lost_item', 'matches', schema='matches', type_='foreignkey')
+    #HERES THE DATA ONE
+    #op.drop_column('items', 'date_added', schema='lost_found')
     op.create_foreign_key('fk_matches_lost_item', 'matches', 'items', ['lost_item_id'], ['id'], source_schema='matches', referent_schema='lost_found')
     op.create_foreign_key('fk_matches_found_item', 'matches', 'items', ['found_item_id'], ['id'], source_schema='matches', referent_schema='lost_found')
     op.drop_column('matches', 'status_changed', schema='matches')
