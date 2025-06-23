@@ -10,7 +10,7 @@ def get_stats():
         "Confirmed matches": "0",
         "Items waiting for pickup": "0",
         "False pickup claims": "0",
-        "Picked-up items": "0"
+        "Archived items": "0"
     }
     item_stats = select_item_stats()
     for i in item_stats:
@@ -21,17 +21,17 @@ def get_stats():
 
     match_stats = select_match_stats()
     for m in match_stats:
-        if i[0] == MatchStatusEnum.UNCONFIRMED:
-            results["Unconfirmed matches"] = str(i[1])
-        elif i[0] == MatchStatusEnum.CONFIRMED:
-            results["Confirmed matches"] = str(i[1])
-        elif i[0] == MatchStatusEnum.PICKED_UP:
-            results["Items waiting for pickup"] = str(i[1])
-        elif i[0] == MatchStatusEnum.FALSE_PICKUP:
-            results["False pickup claims"] = str(i[1])
+        if m[0] == MatchStatusEnum.UNCONFIRMED:
+            results["Unconfirmed matches"] = str(m[1])
+        elif m[0] == MatchStatusEnum.CONFIRMED:
+            results["Confirmed matches"] = str(m[1])
+        elif m[0] == MatchStatusEnum.PICKED_UP:
+            results["Items waiting for pickup"] = str(m[1])
+        elif m[0] == MatchStatusEnum.FALSE_PICKUP:
+            results["False pickup claims"] = str(m[1])
 
     archive_stats = select_num_of_archived_items()
-    results["Picked-up items"] = archive_stats
+    results["Archived items"] = archive_stats
 
     return results
 

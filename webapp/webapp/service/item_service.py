@@ -1,12 +1,14 @@
 from webapp.models2.models import Items
 from webapp.models2.enums import MatchStatusEnum, RoleEnum
 from webapp.repository.item_repo import *
-from webapp.repository.account_repo import select_account_by_email
-from webapp.repository.matches_repo import select_matches_by_item, select_false_pickup_matches
+from webapp.repository.account_repo import *
+from webapp.repository.matches_repo import *
 from webapp.repository.image_repo import *
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects.postgresql import ENUM as PG_ENUM
 from sqlalchemy.sql.sqltypes import Enum as SA_ENUM
+
+from datetime import datetime, timedelta
 
 category_to_class_map = {
     cls.__mapper_args__["polymorphic_identity"].value: cls
@@ -16,8 +18,6 @@ category_to_class_map = {
 def get_submitted_lost_items(user_email: str) -> list[dict[str, str]]:
     items_list = []
     items = select_items_by_email(user_email)
-    if items == []:
-        return False
     
     for i in items:
         status = ""
@@ -34,7 +34,7 @@ def get_submitted_lost_items(user_email: str) -> list[dict[str, str]]:
                     status = "Picked up"
                     break
                 elif m.status == MatchStatusEnum.FALSE_PICKUP:
-                    status = "Under review"
+                    status = "Under false pickup review"
                     break
                 else:
                     status = "Under review"
@@ -42,11 +42,24 @@ def get_submitted_lost_items(user_email: str) -> list[dict[str, str]]:
         item_dict["status"] = status
         items_list.append(item_dict)
     
+        diff = i.created_at - datetime.now()
+        item_dict["expires"] = str(29 - diff.days) + " days"
+    
     return items_list
 
 def submit_item(email: str, item: dict[str, str]):
     cls = category_to_class_map.get(item["category"])
     i = cls()
+
+    acc = select_account_by_email(email)
+    i.email = email
+
+    if acc.role == RoleEnum.USER:
+        i.status = StatusEnum.LOST
+        if acc.last_submission is not None and datetime.now() - acc.last_submission < timedelta(hours=12):
+            return "Can only submit a lost item every 12 hours!"
+    elif acc.role == RoleEnum.WORKER:
+        i.status = StatusEnum.FOUND
 
     item['type'] = item.pop('it')
     item['description'] = item.pop('desc')
@@ -64,20 +77,26 @@ def submit_item(email: str, item: dict[str, str]):
 
             setattr(i, k, v)
 
-    acc = select_account_by_email(email)
-    i.email = email
-    if acc.role == RoleEnum.USER:
-        i.status = StatusEnum.LOST
-    elif acc.role == RoleEnum.WORKER:
-        i.status = StatusEnum.FOUND
-
     try:
         insert_update_item(i)
     except:
         return "Error when submitting item"
     if 'image' in item and item['image'] is not None:
         save_image(str(i.id), item['image'])
+
+    acc.last_submission = datetime.now()
+    insert_update_account(acc)
+
     return "Item successfully submitted"
+
+def renew_lost_item(email:str, item_id: id):
+    i = select_item_by_id(int(item_id))
+    if i.email == email:
+        i.created_at = datetime.now()
+        insert_update_item(i)
+        return "Successfully renewed item!"
+    else:
+        return "Something went wrong"
 
 def update_lost_item(user_email: str, item_id: str, item: dict[str, str]):
     i = select_item_by_id(int(item_id))
@@ -124,6 +143,7 @@ def report_false_pickup(user_email: str, item_id: str):
         for m in matches:
             if m.status == MatchStatusEnum.PICKED_UP:
                 m.status = MatchStatusEnum.FALSE_PICKUP
+                insert_update_match(m)
                 return True
     return False
 
@@ -136,7 +156,9 @@ def get_false_pickup_reports():
         report = {
             "id": str(m.id),
             "owner_fullname": acc.name + " " + acc.surname,
-            "pickupby_fullname": + archive.owner_name + " " + archive.owner_surname
+            "owner_email": acc.email,
+            "pickupby_fullname": archive.owner_name + " " + archive.owner_surname,
+            "pickupby_email": archive.owner_email
         }
         reports_list.append(report)
     return reports_list

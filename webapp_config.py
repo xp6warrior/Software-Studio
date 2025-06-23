@@ -7,7 +7,7 @@ default_b1="green"
 default_b2="red"
 default_h="purple"
 
-from os import path, mkdir
+from os import path, makedirs
 from pathlib import Path
 while True:
     logo_path=input("Logo Path (PNG Format): ").strip()
@@ -47,7 +47,7 @@ b2=input(f"Button Color 2 ['{default_b2}']: ").strip()
 if b2=="": b2=default_b2
 h=input(f"Hover Color ['{default_h}']: ").strip()
 if h=="": h=default_h
-if not path.exists("configs"):
-    mkdir("configs")
-config_file=open("configs/config.txt","w")
+if not path.exists("./configs"):
+    makedirs("./configs")
+config_file=open("./configs/config.txt","w")
 config_file.write("\n".join([app_name, app_desc, email_domain, bg, pad, b1, b2, h]))

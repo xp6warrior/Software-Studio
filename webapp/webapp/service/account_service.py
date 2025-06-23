@@ -1,40 +1,48 @@
 from webapp.repository.account_repo import *
 from webapp.repository.account_repo import delete_account as delete_account_from_repo
-from webapp.models2.enums import RoleEnum
 
-import secrets
-import string
+import os
+import bcrypt
 from email_validator import validate_email, EmailNotValidError
 from sqlalchemy.exc import IntegrityError
 
-def create_account(email: str, password: str, role: RoleEnum, name: str, surname: str) -> str:
-    if type(email) != str or type(role) != RoleEnum or type(name) != str or type(surname) != str:
-        return "Error: Account parameters have incorrect data types!"
+def create_account(email: str, password: str, role: str, name: str, surname: str) -> str:
+    if email == "" or password == "" or role == "" or name == "" or surname == "":
+        return "All information is required!"
     
+    if " " in email or " " in password or " " in role or " " in name or " " in surname:
+        return "Invalid credentials"
+
+    with open(os.getenv("CONFIGS_PATH") + "/config.txt", "r") as f:
+        lines = [line.strip() for line in f.readlines()] 
+    if lines[2] not in email:
+        return f"Email doesn't belong to {lines[0]}"
+
     # Validate email format
     try:
         validate_email(email)
     except EmailNotValidError:
-        return "Error: Invalid email address!"
+        return "Invalid email address format!"
     
-    # Generate password if none provided
-    if password == None:
-        chars = string.ascii_letters + string.digits + string.punctuation
-        password = ''.join(secrets.choice(chars) for _ in range(14))
-    elif type(password) != str:
-        return "Error: Account parameters have incorrect data types!"
+    # Hash password
+    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     
     # Insert the account
     try:
         insert_update_account(Accounts(
-            email=email, password=password, role=role, name=name, surname=surname
+            email=email, password=hashed_password, role=role, name=name, surname=surname
         ))
+        return "Account successfully registered"
     except IntegrityError:
-        return "Error: Email address already in use"
+        return "Email address already in use"
 
 def login(email: str, password: str) -> str:
     account = select_account_by_email(email)
-    if account == None or account.password != password:
+    if account == None or not bcrypt.checkpw(password.encode(), account.password.encode()):
+        default_admin_user = os.getenv("DEFAULT_ADMIN_USER")
+        default_admin_pass = os.getenv("DEFAULT_ADMIN_PASS")
+        if default_admin_user is not None and default_admin_pass is not None and default_admin_user == email and default_admin_pass == password:
+            return "ADMIN"
         return False
     else:
         return account.role

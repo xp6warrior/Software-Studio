@@ -1,5 +1,6 @@
 import reflex as rx
 from sqlalchemy import select, func
+from sqlalchemy.orm import joinedload
 
 from webapp.models2.models import Matches, Items
 from webapp.models2.enums import StatusEnum, MatchStatusEnum
@@ -13,12 +14,14 @@ def select_matches_by_item(item: Items) -> list[Matches]:
     with rx.session() as session:
         if item.status == StatusEnum.LOST:
             matches = session.scalars(
-                item._lost_matches.select()
+                select(Matches).options(joinedload(Matches.found_item)).where(Matches.lost_item_id == item.id) 
             ).all()
         elif item.status == StatusEnum.FOUND:
             matches = session.scalars(
-                item._found_matches.select()
+                select(Matches).options(joinedload(Matches.found_item)).where(Matches.found_item_id == item.id)
             ).all()
+        # for m in matches:
+        #     session.refresh(m, attribute_names=["lost_item", "found_item"])
     return matches
 
 def select_match_by_id(match_id: int) -> Matches:

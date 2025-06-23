@@ -11,3 +11,11 @@ def write_policy(policy: str) -> bool:
     filepath = os.getenv("CONFIGS_PATH") + "/policy.txt"
     with open(filepath, "w") as f:
         f.write(policy)
+
+def get_default_admin() -> list[str]:
+    filepath = os.getenv("CONFIGS_PATH") + "/config.txt"
+    with open(filepath, "r") as f:
+        cnfg = f.readlines()
+        for i in range(len(cnfg)):
+            cnfg[i] = cnfg[i].strip("\n\r")
+        return [cnfg[8], cnfg[9]]

@@ -58,11 +58,12 @@ class Accounts(Base):
     )
 
     email = Column(String(254))
-    password = Column(String(30), nullable=False)
+    password = Column(String(60), nullable=False)
     role = Column(postgresql.ENUM(RoleEnum), nullable=False)
     name = Column(String(20), nullable=False)
     surname = Column(String(30), nullable=False)
-    last_login = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    last_login = Column(DateTime(), server_default=func.now(), nullable=False)
+    last_submission = Column(DateTime())
 
 
 class Items(Base):
@@ -78,7 +79,7 @@ class Items(Base):
     category = Column(postgresql.ENUM(CategoryEnum), nullable=False)
     status = Column(postgresql.ENUM(StatusEnum), nullable=False)
     description = Column(String(255))
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     email = Column(String(254), nullable=False)
 
     _lost_matches = relationship("Matches", back_populates="lost_item", foreign_keys="Matches.lost_item_id", 
@@ -366,13 +367,13 @@ class Matches(Base):
     found_item = relationship("Items", back_populates="_found_matches", foreign_keys=[found_item_id],
                               lazy="joined")
     
-    # TODO Figure out synopsis function
-    def __str__(self):
-        synopsis = ""
-        for k, v in self.found_item.to_dict().items():
-            synopsis += f"{v} "
-        synopsis += self.found_item.type
-        return synopsis
+    # # TODO Figure out synopsis function
+    # def __str__(self):
+    #     synopsis = ""
+    #     for k, v in self.found_item.to_dict().items():
+    #         synopsis += f"{v} "
+    #     synopsis += self.found_item.type
+    #     return synopsis
 
 class ArchivedItems(Base):
     __tablename__ = "archiveditems"
@@ -389,4 +390,4 @@ class ArchivedItems(Base):
     owner_pesel = Column(String(11), nullable=False)
     owner_name = Column(String(20), nullable=False)
     owner_surname = Column(String(30), nullable=False)
-    pickup_time = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    pickup_time = Column(DateTime(), server_default=func.now(), nullable=False)

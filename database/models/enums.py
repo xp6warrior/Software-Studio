@@ -20,11 +20,11 @@ class StatusEnum(str, Enum):
     FOUND = "found"
 
 class SizeEnum(str, Enum):
-    XS = "xs"
-    S = "s"
-    M = "m"
-    L = "l"
-    XL = "xl"
+    XS = "XS"
+    S = "S"
+    M = "M"
+    L = "L"
+    XL = "XL"
 
 class ColorEnum(str, Enum):
     RED = "Red"
