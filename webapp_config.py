@@ -6,6 +6,8 @@ default_pad="2rem"
 default_b1="green"
 default_b2="red"
 default_h="purple"
+default_admin_user = "admin"
+default_admin_pass = "admin"
 
 from os import path, makedirs
 from pathlib import Path
@@ -47,7 +49,11 @@ b2=input(f"Button Color 2 ['{default_b2}']: ").strip()
 if b2=="": b2=default_b2
 h=input(f"Hover Color ['{default_h}']: ").strip()
 if h=="": h=default_h
+admin_user=input(f"Default admin username ['{default_admin_user}']: ").strip()
+if admin_user=="": admin_user=default_admin_user
+admin_pass=input(f"Default admin password ['{default_admin_pass}']: ").strip()
+if admin_pass=="": admin_pass=default_admin_pass
 if not path.exists("./configs"):
     makedirs("./configs")
 config_file=open("./configs/config.txt","w")
-config_file.write("\n".join([app_name, app_desc, email_domain, bg, pad, b1, b2, h]))
+config_file.write("\n".join([app_name, app_desc, email_domain, bg, pad, b1, b2, h, admin_user, admin_pass]))

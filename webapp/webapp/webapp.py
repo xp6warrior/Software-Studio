@@ -35,205 +35,6 @@ from webapp.service.matches_service import *
 from webapp.service.stats_service import *
 from webapp.repository.configs_repo import *
 
-# def login(email, password):
-#     return "WORKER"
-#     return "ADMIN"
-#     return "USER"
-
-
-# def create_account(email, password, role, firstname, surname):
-#     print(email, password, role, firstname, surname)
-#     return "ACCOUNT CREATED SUCCESSFULLY"
-
-
-# def get_user_account_details(email):
-#     return {"email": "a@b.c", "role": "USER", "name": "Arin", "surname": "Upadhyay"}
-
-
-# def get_policy():
-#     return "POLICY TEXT"
-
-
-# def submit_item(email, item):
-#     print(email, item)
-#     return "Item submitted successfully"
-
-
-# def get_submitted_lost_items(user_email):
-#     return [
-#         {
-#             "id": "12",
-#             "category": "Personal Items",
-#             "it": "Passport",
-#             "desc": "ss",
-#             "color": "Green",
-#             "size": "",
-#             "material": "",
-#             "brand": "",
-#             "name": "",
-#             "status": "Matched",
-#         },
-#         {
-#             "id": "13",
-#             "category": "Personal Items",
-#             "it": "Passport",
-#             "desc": "pp",
-#             "color": "Red",
-#             "size": "",
-#             "material": "",
-#             "brand": "",
-#             "name": "",
-#             "status": "Picked Up",
-#         },
-#     ]
-
-
-# def update_lost_item(user_email, iid, updated_item):
-#     print(user_email, iid, updated_item)
-#     return "OK"
-
-
-# def delete_lost_item(user_email, iid):
-#     print(user_email, iid)
-#     return True
-
-
-# def report_false_pickup(user_email, iid):
-#     print(user_email, iid)
-#     return True
-
-
-# def get_unconfirmed_matches(worker_email):
-#     return [
-#         {"match_id": "123", "synopsis": "Black Passport Paper S"},
-#         {"match_id": "145", "synopsis": "Green Handbag Fabric M"},
-#     ]
-
-
-# def get_unconfirmed_match(mid):
-#     from pathlib import Path
-
-#     image_path1 = Path("C:\\Users\\HP\\Desktop\\bgs\\doo.jpeg")
-#     image_bytes1 = image_path1.read_bytes()
-#     image_path2 = Path("C:\\Users\\HP\\Desktop\\bgs\\doom.jpg")
-#     image_bytes2 = image_path2.read_bytes()
-#     return {
-#         "match_id": "123",
-#         "lost": {
-#             "id": "12",
-#             "image": image_bytes1,
-#             "category": "Personal Items",
-#             "it": "Passport",
-#             "desc": "ss",
-#             "color": "Green",
-#             "size": "",
-#             "material": "",
-#             "brand": "",
-#             "name": "",
-#         },
-#         "found": {
-#             "id": "13",
-#             "image": image_bytes2,
-#             "category": "Personal Items",
-#             "it": "Passport",
-#             "desc": "ss",
-#             "color": "Green",
-#             "size": "",
-#             "material": "",
-#             "brand": "",
-#             "name": "",
-#         },
-#         "score": "87%",
-#     }
-
-
-# def confirm_match(mid):
-#     print(mid)
-#     return True
-
-
-# def get_confirmed_matches_with_owner_info(worker_email):
-#     return [
-#         {
-#             "match_id": "123",
-#             "id": "13",
-#             "category": "Personal Items",
-#             "it": "Passport",
-#             "desc": "ss",
-#             "color": "Green",
-#             "size": "",
-#             "material": "",
-#             "brand": "",
-#             "name": "",
-#             "email": "a@b.c",
-#             "firstname": "ARIN",
-#             "surname": "Upadhyay",
-#         },
-#         {
-#             "match_id": "124",
-#             "id": "13",
-#             "category": "Personal Items",
-#             "it": "Passport",
-#             "desc": "ss",
-#             "color": "Green",
-#             "size": "",
-#             "material": "",
-#             "brand": "",
-#             "name": "",
-#             "email": "a@b.c",
-#             "firstname": "ARIN",
-#             "surname": "Upadhyay",
-#         },
-#     ]
-
-
-# def hand_over_and_archive_match(mid, pesel, print_receipt):
-#     from pathlib import Path
-
-#     r = Path("C:\\Users\\HP\\Downloads\\uykladSWITCH.pdf")
-#     rb = r.read_bytes()
-#     print(mid, pesel, print_receipt)
-#     return rb
-
-
-# def write_policy(policy):
-#     print(policy)
-#     return True
-
-
-# def get_stats():
-#     return {"NUMBER OF ITEMS DELIVERED": "100"}
-
-
-# def get_false_pickup_reports():
-#     return [
-#         {
-#             "id": "13",
-#             "owner_fullname": "ARIN Upadhyay",
-#             "owner_email": "a@b.c",
-#             "pickedupby_fullname": "ARIN2 Upadhyay",
-#             "pickedupby_email": "a2@b.c",
-#         }
-#     ]
-
-
-# def get_accounts():
-#     return [
-#         {
-#             "email": "a@b.c",
-#             "password": "dd",
-#             "role": "USER",
-#             "firstname": "ARIN",
-#             "surname": "Upadhyay",
-#         }
-#     ]
-
-
-# def delete_account(email):
-#     print(email)
-#     return True
-
-
 # ============================================================================================================
 
 categories = [
@@ -248,7 +49,7 @@ categories = [
 ]
 personal_item_types = ["ID Card", "Passport", "Keys", "Credit Card", "Other"]
 jewelry_types = ["Ring", "Earrings", "Necklace", "Piercing", "Other"]
-accessory_types = ["Glasses", "Sun Glasses", "Wrist Watch", "Other"]
+accessory_types = ["Glasses", "Sunglasses", "Wristwatch", "Other"]
 travel_item_types = [
     "Suitcase",
     "Handbag",
@@ -359,9 +160,6 @@ class State(rx.State):
     register_user_response: str = ""
 
     def call_register_user(self):
-        if "@" not in self.email or "." not in self.email:
-            self.register_user_response = "INVALID EMAIL FORMAT"
-            return
         self.register_user_response = create_account(
             self.email, self.password, "USER", self.firstname, self.surname
         )
@@ -652,16 +450,6 @@ class State(rx.State):
     manage_account_response: str = ""
     accounts: list[dict] = []
 
-    def call_create_account(self):
-        self.manage_account_response = create_account(
-            self.email, self.password, self.role, self.firstname, self.surname
-        )
-        self.email = ""
-        self.password = ""
-        self.role = ""
-        self.firstname = ""
-        self.surname = ""
-
     def load_accounts(self):
         self.accounts = get_accounts()
 
@@ -672,12 +460,12 @@ class State(rx.State):
         else:
             self.manage_account_response = "ACCOUNT DELETION FAILED"
 
-    email2 = ""
-    password2 = ""
-    role2 = ""
-    firstname2 = ""
-    surname2 = ""
-    def call_create_account2(self):
+    email2: str = ""
+    password2: str = ""
+    role2: str = ""
+    firstname2: str = ""
+    surname2: str = ""
+    def call_create_account(self):
         self.manage_account_response = create_account(
             self.email2, self.password2, self.role2, self.firstname2, self.surname2
         )
@@ -1052,11 +840,6 @@ def AdminDashboard() -> rx.Component:
                         rx.hstack(
                             # a) Markdown editor
                             rx.vstack(
-                                rx.text(
-                                    "You can use Markdown (`# Heading`, `- bullet`):",
-                                    color="gray.300",
-                                    font_size="sm",
-                                ),
                                 rx.text_area(
                                     placeholder="Type policy here…",
                                     value=State.new_policy,
@@ -1074,19 +857,19 @@ def AdminDashboard() -> rx.Component:
                                 spacing="3",
                             ),
                             # b) Live preview box
-                            rx.vstack(
-                                rx.text("Preview", weight="medium", mb="2"),
-                                rx.box(
-                                    rx.markdown(State.new_policy),
-                                    p="4",
-                                    border="1px solid",
-                                    border_color="gray.400",
-                                    border_radius="md",
-                                    width="500px",
-                                    height="500px",
-                                    overflow_y="auto",
-                                ),
-                            ),
+                            # rx.vstack(
+                            #     rx.text("Preview", weight="medium", mb="2"),
+                            #     rx.box(
+                            #         rx.markdown(State.new_policy),
+                            #         p="4",
+                            #         border="1px solid",
+                            #         border_color="gray.400",
+                            #         border_radius="md",
+                            #         width="500px",
+                            #         height="500px",
+                            #         overflow_y="auto",
+                            #     ),
+                            # ),
                             spacing="8",
                         ),
                         spacing="4",
@@ -1122,12 +905,12 @@ def AdminDashboard() -> rx.Component:
                                 rx.table.root(
                                     rx.table.header(
                                         rx.table.row(
-                                            rx.table.column_header_cell("ID"),
-                                            rx.table.column_header_cell("Owner"),
-                                            rx.table.column_header_cell("Owner Email"),
-                                            rx.table.column_header_cell("Picked Up By"),
+                                            rx.table.column_header_cell("Archive ID"),
+                                            rx.table.column_header_cell("Name"),
+                                            rx.table.column_header_cell("Email"),
+                                            rx.table.column_header_cell("Pesel"),
                                             rx.table.column_header_cell(
-                                                "Picked Up Email"
+                                                "Summary"
                                             ),
                                         )
                                     ),
@@ -1138,8 +921,8 @@ def AdminDashboard() -> rx.Component:
                                                 rx.table.cell(r["id"]),
                                                 rx.table.cell(r["owner_fullname"]),
                                                 rx.table.cell(r["owner_email"]),
-                                                rx.table.cell(r["pickedupby_fullname"]),
-                                                rx.table.cell(r["pickedupby_email"]),
+                                                rx.table.cell(r["owner_pesel"]),
+                                                rx.table.cell(r["item_summary"]),
                                             ),
                                         )
                                     ),
@@ -1184,7 +967,7 @@ def AdminDashboard() -> rx.Component:
                                 ),
                                 rx.button(
                                     "Register",
-                                    on_click=State.call_create_account2,
+                                    on_click=State.call_create_account,
                                     color_scheme=button_style_1,
                                     mt="2",
                                 ),
@@ -1710,7 +1493,7 @@ def SubmitLostItemPage() -> rx.Component:
                                     ),
                                     as_child=True,
                                 ),
-                                rx.text(State.submit_item_response),
+                                rx.text(State.submit_item_response, color='red'),
                                 spacing="4",
                             ),
                             # on_submit=lambda data: [
@@ -2366,7 +2149,6 @@ def ViewLostReportPage() -> rx.Component:
                     width="100%",
                     max_w="700px",
                     padding="50px",
-                    bg="#1a202c",
                     border_radius=9,
                 )
             ),
@@ -2747,7 +2529,7 @@ def SubmitFoundItemPage() -> rx.Component:
                             # ],
                             reset_on_submit=False,
                         ),
-                        rx.text(State.submit_item_response, color="green"),
+                        rx.text(State.submit_item_response, color="red"),
                         spacing="6",
                     ),
                     width="100%",
@@ -3626,7 +3408,7 @@ def PolicyPage() -> rx.Component:
                 rx.card(
                     rx.vstack(
                         rx.heading("Company Policy", size="8", weight="bold", mb="4"),
-                        rx.markdown(
+                        rx.text(
                             State.policy,
                             white_space="pre-wrap",
                             font_size="md",

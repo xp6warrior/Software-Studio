@@ -1,5 +1,6 @@
 from webapp.repository.account_repo import *
 from webapp.repository.account_repo import delete_account as delete_account_from_repo
+from webapp.mail.send import send_templated_email
 
 import os
 import bcrypt
@@ -32,6 +33,7 @@ def create_account(email: str, password: str, role: str, name: str, surname: str
         insert_update_account(Accounts(
             email=email, password=hashed_password, role=role, name=name, surname=surname
         ))
+        send_templated_email(template_id=1, name=name, surname=surname, to=email)
         return "Account successfully registered"
     except IntegrityError:
         return "Email address already in use"
@@ -39,9 +41,10 @@ def create_account(email: str, password: str, role: str, name: str, surname: str
 def login(email: str, password: str) -> str:
     account = select_account_by_email(email)
     if account == None or not bcrypt.checkpw(password.encode(), account.password.encode()):
-        default_admin_user = os.getenv("DEFAULT_ADMIN_USER")
-        default_admin_pass = os.getenv("DEFAULT_ADMIN_PASS")
-        if default_admin_user is not None and default_admin_pass is not None and default_admin_user == email and default_admin_pass == password:
+        with open(os.getenv("CONFIGS_PATH") + "/config.txt", "r") as f:
+            lines = [line.strip() for line in f.readlines()]
+        
+        if lines[8] is not None and lines[9] is not None and lines[8] == email and lines[9] == password:
             return "ADMIN"
         return False
     else:

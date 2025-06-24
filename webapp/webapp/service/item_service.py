@@ -4,6 +4,7 @@ from webapp.repository.item_repo import *
 from webapp.repository.account_repo import *
 from webapp.repository.matches_repo import *
 from webapp.repository.image_repo import *
+from webapp.mail.send import send_templated_email
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects.postgresql import ENUM as PG_ENUM
 from sqlalchemy.sql.sqltypes import Enum as SA_ENUM
@@ -43,12 +44,14 @@ def get_submitted_lost_items(user_email: str) -> list[dict[str, str]]:
         items_list.append(item_dict)
     
         diff = i.created_at - datetime.now()
-        item_dict["expires"] = str(29 - diff.days) + " days"
+        item_dict["expires"] = str(31 + diff.days) + " days"
     
     return items_list
 
 def submit_item(email: str, item: dict[str, str]):
     cls = category_to_class_map.get(item["category"])
+    if cls is None:
+        return "Error when submitting item"
     i = cls()
 
     acc = select_account_by_email(email)
@@ -73,6 +76,8 @@ def submit_item(email: str, item: dict[str, str]):
 
                 if isinstance(col_type, (SA_ENUM, PG_ENUM)):
                     enum_class = col_type.enum_class
+                    if v == '' or v is None:
+                        continue
                     v = enum_class(v)
 
             setattr(i, k, v)
@@ -86,6 +91,16 @@ def submit_item(email: str, item: dict[str, str]):
 
     acc.last_submission = datetime.now()
     insert_update_account(acc)
+
+    if acc.role == RoleEnum.USER:
+        send_templated_email(
+            template_id=3,
+            to=email,
+            name=acc.name,
+            surname=acc.surname,
+            item_id=i.id,
+            item_type=i.type
+        )
 
     return "Item successfully submitted"
 
@@ -154,11 +169,11 @@ def get_false_pickup_reports():
         acc = select_account_by_email(m.lost_item.email)
         archive = select_archive_item_by_match_id(m.id)
         report = {
-            "id": str(m.id),
+            "id": str(archive.id),
             "owner_fullname": acc.name + " " + acc.surname,
             "owner_email": acc.email,
-            "pickupby_fullname": archive.owner_name + " " + archive.owner_surname,
-            "pickupby_email": archive.owner_email
+            "owner_pesel": archive.owner_pesel,
+            "item_summary": archive.item_summary
         }
         reports_list.append(report)
     return reports_list

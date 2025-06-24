@@ -1,7 +1,8 @@
 from webapp.repository.matches_repo import *
 from webapp.repository.item_repo import *
 from webapp.repository.image_repo import *
-from webapp.service.account_service import get_user_account_details
+from webapp.mail.send import send_templated_email
+from webapp.service.account_service import *
 from webapp.models2.models import ArchivedItems
 from webapp.models2.enums import MatchStatusEnum
 from webapp.util.pickup_report import generate_pickup_report
@@ -25,14 +26,9 @@ def get_unconfirmed_matches(worker_email: str) -> list[dict[str, str]]:
         matches = select_matches_by_item(i)
         for m in matches:
             if m.status == MatchStatusEnum.UNCONFIRMED:
-
-                synopsis = ""
-                for k, v in i.to_dict().items():
-                    synopsis += f"{v} "
-                synopsis += i.type
                 matches_list.append({
                     "match_id": str(m.id),
-                    "synopsis": synopsis
+                    "synopsis": i.__str__()
                 })
 
     return matches_list
@@ -46,7 +42,7 @@ def get_unconfirmed_match(match_id: str):
         found_item = select_item_by_id(match.found_item_id)
         lost_dict = lost_item.to_dict()
         lost_dict["image"] = get_image(str(lost_item.id))
-        found_dict = lost_item.to_dict()
+        found_dict = found_item.to_dict()
         found_dict["image"] = get_image(str(found_item.id))
         return {
             "match_id": match_id,
@@ -58,8 +54,6 @@ def get_unconfirmed_match(match_id: str):
 def get_confirmed_matches_with_owner_info(worker_email: str) -> list[dict[str, str]]:
     matches_list = []
     items = select_items_by_email(worker_email)
-    if items == []:
-        return False
     
     for i in items:
         matches = select_matches_by_item(i)
@@ -83,7 +77,15 @@ def confirm_match(match_id: str) -> bool:
         return False
     elif match.status == MatchStatusEnum.UNCONFIRMED:
         match.status = MatchStatusEnum.CONFIRMED
+        lost_item = select_item_by_id(match.lost_item_id)
         insert_update_match(match)
+        send_templated_email(
+            template_id=2,
+            name="",
+            surname="",
+            item_id=lost_item.id,
+            to=lost_item.email
+        )
         return True
     
 def hand_over_and_archive_match(match_id: str, pesel: str, print_receipt: bool) -> bytes:
@@ -108,6 +110,14 @@ def hand_over_and_archive_match(match_id: str, pesel: str, print_receipt: bool) 
         match.status = MatchStatusEnum.PICKED_UP
         insert_update_match(match)
 
+        send_templated_email(
+            template_id=9,
+            name=owner_details['name'],
+            surname=owner_details['surname'],
+            to=owner_details['email'],
+            item_id=match.lost_item_id
+        )
+
         if print_receipt:
             item_details = found_item.to_dict()
             owner_details["pesel"] = pesel
@@ -118,7 +128,7 @@ def hand_over_and_archive_match(match_id: str, pesel: str, print_receipt: bool) 
             item_details['Archive ID'] = item_details.pop('id', None)
             item_details['Category'] = item_details.pop('category', None)
             item_details['Item type'] = item_details.pop('it', None)
-            item_details['Descripton'] = item_details.pop('desc', None)
+            item_details['Description'] = item_details.pop('desc', None)
             item_details['Color'] = item_details.pop('color', None)
             item_details['Size'] = item_details.pop('size', None)
             item_details['Material'] = item_details.pop('material', None)

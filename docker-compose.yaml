@@ -25,12 +25,10 @@ services:
     environment:
       - DATABASE_URL=postgresql://root:root@db/postgres
       - IMAGE_STORE_PATH=/var/lib/back2u/images
-      - CONFIGS_PATH=/var/lib/back2u/webapp-configs
-      - DEFAULT_ADMIN_USER=admin
-      - DEFAULT_ADMIN_PASS=admin
+      - CONFIGS_PATH=/var/lib/back2u/configs
     volumes:
       - image_data:/var/lib/back2u/images
-      - ./webapp-configs:/var/lib/back2u/webapp-configs
+      - ./configs:/var/lib/back2u/configs
     depends_on:
       db:
         condition: service_healthy
@@ -42,9 +40,11 @@ services:
 
   rte:
     build:
-      context: ./rte
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: rte/Dockerfile
     container_name: ss-rte
+    environment:
+      - DATABASE_URL=postgresql://root:root@db/postgres
     depends_on:
       db:
         condition: service_healthy

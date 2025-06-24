@@ -66,7 +66,8 @@ def generate_pickup_report(owner_details: dict[str, str], item_details: dict[str
     item_data = []
 
     for trait, value in item_details.items():
-        item_data.append([trait, value])
+        if value is not None or value == "":
+            item_data.append([trait, value])
 
     item_table = Table(item_data, colWidths=[2.5 * inch, 3.5 * inch])
     item_table.setStyle(TableStyle([

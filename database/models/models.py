@@ -98,7 +98,7 @@ class Items(Base):
         }
     
     def __str__(self):
-        return f"Category: {self.category.value}, Description: {self.description}, Date submitted: {self.created_at}, "
+        return f"ID: {self.id}, {self.description}: "
 
 class PersonalItems(Items):
     __tablename__ = "personalitems"
@@ -123,7 +123,7 @@ class PersonalItems(Items):
     
     def __str__(self):
         base_str = super().__str__()
-        base_str += f"Type: {self.type.value}, Color: {self.color.value}"
+        base_str += f"{self.type.value}, {self.color.value}"
         return base_str
 
 class Jewelry(Items):
@@ -151,7 +151,7 @@ class Jewelry(Items):
     
     def __str__(self):
         base_str = super().__str__()
-        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}"
+        base_str += f"{self.type.value}, {self.color.value}, {self.size.value}"
         return base_str
 
 class Accessories(Items):
@@ -181,7 +181,7 @@ class Accessories(Items):
     
     def __str__(self):
         base_str = super().__str__()
-        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Material: {self.material.value}, Brand: {self.brand}"
+        base_str += f"{self.type.value}, {self.color.value}, {self.material.value}, {self.brand}"
         return base_str
 
 class TravelItems(Items):
@@ -213,7 +213,7 @@ class TravelItems(Items):
     
     def __str__(self):
         base_str = super().__str__()
-        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}, Material: {self.material.value}, Brand: {self.brand}"
+        base_str += f"{self.type.value}, {self.color.value}, {self.size.value}, {self.material.value}, {self.brand}"
         return base_str
 
 class ElectronicDevices(Items):
@@ -243,7 +243,7 @@ class ElectronicDevices(Items):
     
     def __str__(self):
         base_str = super().__str__()
-        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Material: {self.material.value}, Brand: {self.brand}"
+        base_str += f"{self.type.value}, {self.color.value}, {self.material.value}, {self.brand}"
         return base_str
 
 class Clothing(Items):
@@ -275,7 +275,7 @@ class Clothing(Items):
     
     def __str__(self):
         base_str = super().__str__()
-        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}, Material: {self.material.value}, Brand: {self.brand}"
+        base_str += f"{self.type.value}, {self.color.value}, {self.size.value}, {self.material.value}, {self.brand}"
         return base_str
 
 class OfficeItems(Items):
@@ -307,7 +307,7 @@ class OfficeItems(Items):
     
     def __str__(self):
         base_str = super().__str__()
-        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}, Material: {self.material.value}, Name: {self.name}"
+        base_str += f"{self.type.value}, {self.color.value}, {self.size.value}, {self.material.value}, {self.name}"
         return base_str
 
 class OtherItems(Items):
@@ -341,7 +341,7 @@ class OtherItems(Items):
     
     def __str__(self):
         base_str = super().__str__()
-        base_str += f"Type: {self.type.value}, Color: {self.color.value}, Size: {self.size.value}, Material: {self.material.value}, Brand: {self.brand}, Name: {self.name}"
+        base_str += f"{self.type.value}, {self.color.value}, {self.size.value}, {self.material.value}, {self.brand}, {self.name}"
         return base_str
 
 
